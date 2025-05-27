@@ -1,79 +1,83 @@
 import os
-import time
 import requests
+import json
+import time
 from datetime import datetime
 
 # ========== CONFIGURATION ==========
-config_url = "https://wakfu.cdn.ankama.com/gamedata/config.json"
-essential_files = [
-    "items.json",
-    "actions.json",
-    "equipmentItemTypes.json",
-    "itemProperties.json",
-    "states.json",
-    "itemTypes.json",
-    "recipes.json",
-    "recipeIngredients.json",
-    "recipeResults.json",
-    "jobsItems.json"
-]
-output_dir = "./wakfu_api_json"
-log_file = "log.txt"
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+BASE_URL = "https://wakfu.cdn.ankama.com/gamedata"
+CONFIG_URL = f"{BASE_URL}/config.json"
+OUTPUT_DIR = "wakfu_api_json"
+HEADERS = {
+    "User-Agent": "WakStuffDataFetcher/1.0"
 }
+TYPES = [
+    "items",
+    "actions",
+    "equipmentItemTypes",
+    "itemProperties",
+    "states",
+    "itemTypes",
+    "recipes",
+    "recipeIngredients",
+    "recipeResults",
+    "jobsItems"
+]
+LOG_FILE = "log.txt"
 
-# ========== LOGGING UTILS ==========
-log_lines = []
+# ========== FONCTIONS ==========
 
 def log(message):
-    timestamp = datetime.now().strftime("%H:%M:%S")
-    line = f"[{timestamp}] {message}"
-    print(line)
-    log_lines.append(line)
+    timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(f"{timestamp} {message}\n")
+    print(message)
 
-def save_log():
-    with open(log_file, "w", encoding="utf-8") as f:
-        f.write("\n".join(log_lines))
+def fetch_version():
+    r = requests.get(CONFIG_URL, headers=HEADERS)
+    if r.status_code == 200:
+        try:
+            version = r.json()["version"]
+            log(f"[OK] Version détectée : {version}")
+            return version
+        except Exception as e:
+            log(f"[FAIL] Erreur de parsing JSON version : {e}")
+    else:
+        log(f"[FAIL] Impossible d'accéder à config.json (code {r.status_code})")
+    return None
 
-# ========== START SCRIPT ==========
-script_start = time.time()
-log("[INFO] Démarrage du script de récupération JSON Wakfu")
+def download_and_format_json(version, type_):
+    url = f"{BASE_URL}/{version}/{type_}.json"
+    filepath = os.path.join(OUTPUT_DIR, f"{type_}.json")
 
-# 1. Récupérer la version actuelle
-try:
-    log(f"[INFO] Tentative de récupération de la version depuis {config_url}")
-    r = requests.get(config_url, headers=headers)
-    r.raise_for_status()
-    version = r.json().get("currentVersion", "1.87.2")
-    log(f"[OK] Version détectée : {version}")
-except Exception as e:
-    version = "1.87.2"
-    log(f"[FAIL] Impossible de récupérer la version, utilisation par défaut : {version} ({e})")
-
-# 2. Créer le dossier
-os.makedirs(output_dir, exist_ok=True)
-
-# 3. Télécharger les fichiers
-for filename in essential_files:
-    url = f"https://wakfu.cdn.ankama.com/gamedata/{version}/{filename}"
-    path = os.path.join(output_dir, filename)
-    start = time.time()
     try:
-        log(f"[INFO] Téléchargement de {filename}...")
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=HEADERS)
         r.raise_for_status()
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(r.text)
-        duration = round(time.time() - start, 2)
-        log(f"[OK] {filename} téléchargé ({duration} sec)")
+        data = r.json()  # Vérifie que le JSON est valide
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+        log(f"[OK] Téléchargé et formaté : {type_}.json")
     except Exception as e:
-        log(f"[FAIL] {filename} — erreur : {e}")
+        log(f"[FAIL] Échec pour {type_}.json : {e}")
 
-# 4. Fin du script
-total_duration = round(time.time() - script_start, 2)
-log(f"[INFO] Script terminé en {total_duration} secondes")
+# ========== SCRIPT PRINCIPAL ==========
 
-# 5. Sauvegarde du log
-save_log()
-log(f"[INFO] Log écrit dans {log_file}")
+def main():
+    start_time = time.time()
+
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+        log(f"[OK] Dossier créé : {OUTPUT_DIR}")
+
+    version = fetch_version()
+    if not version:
+        return
+
+    for type_ in TYPES:
+        download_and_format_json(version, type_)
+
+    elapsed = time.time() - start_time
+    log(f"[INFO] Téléchargement terminé en {elapsed:.2f} secondes.")
+
+if __name__ == "__main__":
+    main()
