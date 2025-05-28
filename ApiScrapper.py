@@ -12,16 +12,12 @@ HEADERS = {
     "User-Agent": "WakStuffDataFetcher/1.0"
 }
 TYPES = [
-    "items",
-    "actions",
-    "equipmentItemTypes",
-    "itemProperties",
-    "states",
-    "itemTypes",
-    "recipes",
-    "recipeIngredients",
-    "recipeResults",
-    "jobsItems"
+    "items",                  # Objets + effets
+    "actions",                # Définition des effets
+    "equipmentItemTypes",     # Types d’équipements (ex: casque, anneau...)
+    "itemProperties",         # Propriétés spéciales (ex: épique, relique…)
+    "itemTypes",              # Catégorisation des items
+    "states"                  # États appliqués via objets ou effets
 ]
 LOG_FILE = "log.txt"
 
