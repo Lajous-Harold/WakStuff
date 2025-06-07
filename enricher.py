@@ -1,89 +1,106 @@
 import os
-from config import RAW_DIR, OUT_DIR
-from utils import load_json, save_json, log
-import time
+import json
+import argparse
+from datetime import datetime
 
-def enrich_items():
-    log("[INFO] Début enrichissement des items")
-    os.makedirs(OUT_DIR, exist_ok=True)
+DATA_DIR = "data"
+OUTPUT_DIR = "output"
+OUTPUT_FILE = "items_enriched.json"
 
-    items = load_json(os.path.join(RAW_DIR, "items.json"))
-    actions = load_json(os.path.join(RAW_DIR, "actions.json"))
-    equipment = load_json(os.path.join(RAW_DIR, "equipmentItemTypes.json"))
-    item_types = load_json(os.path.join(RAW_DIR, "itemTypes.json"))
-    properties = load_json(os.path.join(RAW_DIR, "itemProperties.json"))
-    states = load_json(os.path.join(RAW_DIR, "states.json"))
+def log(msg):
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}")
 
-    # Dictionnaires sécurisés
-    equip_map = {}
-    for e in equipment:
-        if isinstance(e, dict):
-            id_ = e.get("id")
-            name = e.get("title", {}).get("fr")
-            if id_ and name:
-                equip_map[id_] = name
+def load_json(name):
+    path = os.path.join(DATA_DIR, f"{name}.json")
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
 
-    type_map = {}
-    for t in item_types:
-        if isinstance(t, dict):
-            id_ = t.get("id")
-            name = t.get("title", {}).get("fr")
-            if id_ and name:
-                type_map[id_] = name
+def detect_rarity(props):
+    rarities = ["Relique", "Épique", "Légendaire", "Mythique", "Rare", "Commun"]
+    for r in rarities:
+        if any(r in p for p in (props or [])):
+            return r
+    return "Commun"
 
-    prop_map = {}
-    for p in properties:
-        if isinstance(p, dict):
-            id_ = p.get("id")
-            name = p.get("name", {}).get("fr") if isinstance(p.get("name"), dict) else None
-            if id_ and name:
-                prop_map[id_] = name
+def enrich_items(limit=None):
+    log("[INFO] Chargement des données sources...")
+    items = load_json("items")
+    if limit:
+        items = items[:limit]
 
-    action_map = {}
-    for a in actions:
-        if isinstance(a, dict):
-            id_ = a.get("definition", {}).get("id")
-            desc = a.get("description", {}).get("fr")
-            if id_ and desc:
-                action_map[id_] = desc
+    actions = load_json("actions")
+    equipment_types = load_json("equipmentItemTypes")
+    item_types = load_json("itemTypes")
+    properties = load_json("itemProperties")
+    states = load_json("states")
 
-    state_map = {}
-    for s in states:
-        if isinstance(s, dict):
-            id_ = s.get("id")
-            name = s.get("name", {}).get("fr")
-            if id_ and name:
-                state_map[id_] = name
+    equipment_map = {e.get("id"): e.get("name", {}).get("fr", "") for e in equipment_types if isinstance(e, dict)}
+    item_type_map = {t.get("id"): t.get("title", {}).get("fr", "") for t in item_types if isinstance(t, dict)}
+    property_map = {p.get("id"): p.get("name", {}).get("fr", "") for p in properties if isinstance(p, dict)}
+    action_map = {a.get("id"): a.get("description", {}).get("fr", "") for a in actions if isinstance(a, dict) and "description" in a}
+    state_map = {s.get("id"): s.get("name", {}).get("fr", "") for s in states if isinstance(s, dict)}
 
     enriched = []
-
     for item in items:
-        d = item.get("definition", {}).get("item", {})
-        enriched.append({
-            "id": item.get("id"),
-            "name": item.get("title", {}).get("fr", ""),
-            "level": d.get("level"),
-            "type": equip_map.get(d.get("equipmentTypeId")),
-            "category": type_map.get(d.get("baseParameters", {}).get("itemTypeId")),
-            "properties": [prop_map.get(p) for p in d.get("properties", []) if p in prop_map],
-            "effects": [
-                action_map.get(e.get("definition", {}).get("actionId"))
-                for e in item.get("equipEffects", []) if isinstance(e, dict)
-            ],
-            "states": [
-                state_map.get(s.get("stateId"))
-                for s in d.get("states", []) if isinstance(s, dict)
-            ],
-        })
+        definition = item.get("definition", {})
+        base = definition.get("item", {})
 
-    output_path = os.path.join(OUT_DIR, "items_enriched.json")
-    save_json(enriched, output_path)
-    log(f"[OK] Données enrichies sauvegardées : {output_path}")
+        obj = {
+            "id": base.get("id"),
+            "name": item.get("title", {}).get("fr", ""),
+            "level": base.get("level", 0),
+            "type": equipment_map.get(base.get("itemTypeId"), "Inconnu"),
+            "category": item_type_map.get(base.get("itemTypeId"), "Inconnu"),
+            "rarity": base.get("rarity"),
+            "properties": [property_map.get(p) for p in base.get("properties", []) if p in property_map],
+            "effects": [],
+            "states": [],
+            "gfxId": base.get("graphicParameters", {}).get("gfxId", None),
+        }
+
+        for effect in definition.get("equipEffects", []):
+            effect_def = effect.get("effect", {}).get("definition", {})
+            action_id = effect_def.get("actionId")
+            if action_id in action_map:
+                obj["effects"].append(action_map[action_id])
+
+        if base.get("states"):
+            obj["states"] = [state_map.get(s.get("stateId"), "") for s in base["states"]]
+
+        obj["rarete"] = detect_rarity(obj["properties"])
+        enriched.append(obj)
+
+    return enriched
+
+def save(items):
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
+    path = os.path.join(OUTPUT_DIR, OUTPUT_FILE)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(items, f, indent=4, ensure_ascii=False)
+
+    log(f"[OK] Fichier enrichi enregistré : {path}")
+
+def main():
+    parser = argparse.ArgumentParser(description="Traitement des objets Wakfu enrichis.")
+    parser.add_argument("--limit", type=int, help="Nombre maximal d'objets à traiter (défaut : tous)", default=None)
+    args = parser.parse_args()
+
+    log("[INFO] Démarrage de l'enrichissement des items...")
+    items = enrich_items(limit=args.limit)
+
+    # Tri final
+    rarity_order = ["Commun", "Rare", "Mythique", "Légendaire", "Épique", "Relique"]
+    items.sort(key=lambda x: (
+        x.get("category", "Inconnu"),
+        x.get("type", "Inconnu"),
+        rarity_order.index(x.get("rarete", "Commun")) if x.get("rarete") in rarity_order else 0,
+        x.get("level", 0)
+    ))
+
+    save(items)
+    log(f"[INFO] Traitement terminé. {len(items)} objets enrichis.")
 
 if __name__ == "__main__":
-    log("[INFO] Lancement manuel de processor.py")
-    start = time.time()
-
-    enrich_items()
-
-    log(f"[INFO] processor.py terminé en {time.time() - start:.2f} secondes.")
+    main()
