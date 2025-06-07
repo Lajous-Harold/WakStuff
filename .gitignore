@@ -12,7 +12,10 @@ venv/
 .env/
 
 # ----- Données JSON téléchargées -----
-wakfu_api_json/
+data/
+*.json
+
+output/
 *.json
 
 # ----- Logs -----

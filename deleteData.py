@@ -1,6 +1,6 @@
 import os
 
-FOLDER = "wakfu_api_json"
+FOLDER = "data"
 
 def delete_json_files(folder):
     if not os.path.exists(folder):
