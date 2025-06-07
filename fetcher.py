@@ -1,5 +1,7 @@
-import os, requests, time
-from config import *
+import os
+import requests
+import time
+from config import BASE_URL, CONFIG_URL, TYPES, RAW_DIR, HEADERS, LOG_FILE
 from utils import log, save_json
 
 def fetch_version():
@@ -27,3 +29,16 @@ def download_json_files(version):
             log(f"[OK] {type_}.json téléchargé ({time.time() - start:.2f} sec)")
         except Exception as e:
             log(f"[FAIL] {type_}.json : {e}")
+
+if __name__ == "__main__":
+    # Reset log si appelé en direct
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        f.write("")
+    log("[INFO] Lancement manuel de fetcher.py")
+    start = time.time()
+
+    version = fetch_version()
+    if version:
+        download_json_files(version)
+
+    log(f"[INFO] fetcher.py terminé en {time.time() - start:.2f} secondes.")

@@ -1,6 +1,7 @@
 import os
 from config import RAW_DIR, OUT_DIR
 from utils import load_json, save_json, log
+import time
 
 def enrich_items():
     log("[INFO] Début enrichissement des items")
@@ -13,15 +14,46 @@ def enrich_items():
     properties = load_json(os.path.join(RAW_DIR, "itemProperties.json"))
     states = load_json(os.path.join(RAW_DIR, "states.json"))
 
-    # Mapping sécurisé
-    equip_map = {e.get("id"): e.get("title", {}).get("fr") for e in equipment if isinstance(e, dict)}
-    type_map = {t.get("id"): t.get("title", {}).get("fr") for t in item_types if isinstance(t, dict)}
-    prop_map = {p.get("id"): p.get("name", {}).get("fr") for p in properties if isinstance(p, dict)}
-    action_map = {
-        a.get("definition", {}).get("id"): a.get("description", {}).get("fr")
-        for a in actions if isinstance(a, dict) and "definition" in a and "description" in a
-    }
-    state_map = {s.get("id"): s.get("name", {}).get("fr") for s in states if isinstance(s, dict)}
+    # Dictionnaires sécurisés
+    equip_map = {}
+    for e in equipment:
+        if isinstance(e, dict):
+            id_ = e.get("id")
+            name = e.get("title", {}).get("fr")
+            if id_ and name:
+                equip_map[id_] = name
+
+    type_map = {}
+    for t in item_types:
+        if isinstance(t, dict):
+            id_ = t.get("id")
+            name = t.get("title", {}).get("fr")
+            if id_ and name:
+                type_map[id_] = name
+
+    prop_map = {}
+    for p in properties:
+        if isinstance(p, dict):
+            id_ = p.get("id")
+            name = p.get("name", {}).get("fr") if isinstance(p.get("name"), dict) else None
+            if id_ and name:
+                prop_map[id_] = name
+
+    action_map = {}
+    for a in actions:
+        if isinstance(a, dict):
+            id_ = a.get("definition", {}).get("id")
+            desc = a.get("description", {}).get("fr")
+            if id_ and desc:
+                action_map[id_] = desc
+
+    state_map = {}
+    for s in states:
+        if isinstance(s, dict):
+            id_ = s.get("id")
+            name = s.get("name", {}).get("fr")
+            if id_ and name:
+                state_map[id_] = name
 
     enriched = []
 
@@ -47,3 +79,11 @@ def enrich_items():
     output_path = os.path.join(OUT_DIR, "items_enriched.json")
     save_json(enriched, output_path)
     log(f"[OK] Données enrichies sauvegardées : {output_path}")
+
+if __name__ == "__main__":
+    log("[INFO] Lancement manuel de processor.py")
+    start = time.time()
+
+    enrich_items()
+
+    log(f"[INFO] processor.py terminé en {time.time() - start:.2f} secondes.")
