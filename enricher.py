@@ -34,11 +34,59 @@ def enrich_items(limit=None):
     properties = load_json("itemProperties")
     states = load_json("states")
 
-    equipment_map = {e.get("id"): e.get("name", {}).get("fr", "") for e in equipment_types if isinstance(e, dict)}
-    item_type_map = {t.get("id"): t.get("title", {}).get("fr", "") for t in item_types if isinstance(t, dict)}
-    property_map = {p.get("id"): p.get("name", {}).get("fr", "") for p in properties if isinstance(p, dict)}
-    action_map = {a.get("id"): a.get("description", {}).get("fr", "") for a in actions if isinstance(a, dict) and "description" in a}
-    state_map = {s.get("id"): s.get("name", {}).get("fr", "") for s in states if isinstance(s, dict)}
+    equipment_map = {}
+    for e in equipment_types:
+        if isinstance(e, dict):
+            eid = e.get("id")
+            ename = e.get("name", {}).get("fr", "")
+            if eid is not None:
+                equipment_map[eid] = ename
+        else:
+            log(f"[WARN] Entrée inattendue dans equipmentItemTypes : {repr(e)}")
+
+    item_type_map = {}
+    for t in item_types:
+        if isinstance(t, dict):
+            tid = t.get("id")
+            tname = t.get("title", {}).get("fr", "")
+            if tid is not None:
+                item_type_map[tid] = tname
+        else:
+            log(f"[WARN] Entrée inattendue dans itemTypes : {repr(t)}")
+
+    property_map = {}
+    for p in properties:
+        try:
+            if isinstance(p, dict):
+                pid = p.get("id")
+                pname = p.get("name", {}).get("fr", "")
+                if pid is not None:
+                    property_map[pid] = pname
+            else:
+                log(f"[WARN] itemProperties : entrée ignorée (type={type(p)}): {repr(p)}")
+        except Exception as e:
+            log(f"[FAIL] Erreur de lecture dans itemProperties : {e} → entrée : {repr(p)}")
+
+
+    action_map = {}
+    for a in actions:
+        if isinstance(a, dict) and "description" in a:
+            aid = a.get("id")
+            adesc = a.get("description", {}).get("fr", "")
+            if aid is not None:
+                action_map[aid] = adesc
+        else:
+            log(f"[WARN] Entrée inattendue dans actions : {repr(a)}")
+
+    state_map = {}
+    for s in states:
+        if isinstance(s, dict):
+            sid = s.get("id")
+            sname = s.get("name", {}).get("fr", "")
+            if sid is not None:
+                state_map[sid] = sname
+        else:
+            log(f"[WARN] Entrée inattendue dans states : {repr(s)}")
 
     enriched = []
     for item in items:
@@ -71,6 +119,7 @@ def enrich_items(limit=None):
         enriched.append(obj)
 
     return enriched
+
 
 def save(items):
     if not os.path.exists(OUTPUT_DIR):
