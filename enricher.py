@@ -42,6 +42,7 @@ def enrich_items(limit=None):
     properties = load_json("itemProperties")
     states = load_json("states")
 
+    # Mapping de référence
     equipment_map = {}
     for e in equipment_types:
         if isinstance(e, dict):
@@ -67,7 +68,7 @@ def enrich_items(limit=None):
         try:
             if isinstance(p, dict):
                 pid = p.get("id")
-                pname = p.get("description", "")  # Remplacé "name" par "description"
+                pname = p.get("description") or p.get("name") or ""
                 if pid is not None:
                     property_map[pid] = pname
             else:
@@ -75,17 +76,17 @@ def enrich_items(limit=None):
         except Exception as e:
             log(f"[FAIL] Erreur de lecture dans itemProperties : {e} → entrée : {repr(p)}")
 
-
     action_map = {}
     for a in actions:
         try:
-            if isinstance(a, dict) and "id" in a and "description" in a:
-                aid = a["id"]
-                desc = a["description"].get("fr", "")
-                action_map[aid] = desc
+            if isinstance(a, dict):
+                definition = a.get("definition", {})
+                aid = definition.get("id")
+                desc = definition.get("effect", "")
+                if aid is not None:
+                    action_map[aid] = desc
         except Exception as e:
             log(f"[WARN] actionMap : {e} → entrée : {repr(a)}")
-
 
     state_map = {}
     for s in states:
@@ -98,7 +99,10 @@ def enrich_items(limit=None):
             log(f"[WARN] Entrée inattendue dans states : {repr(s)}")
 
     enriched = []
+    stats = {"total": 0, "avec_warn": 0}
+
     for item in items:
+        stats["total"] += 1
         definition = item.get("definition", {})
         base = definition.get("item", {})
 
@@ -106,7 +110,7 @@ def enrich_items(limit=None):
             "id": base.get("id"),
             "name": item.get("title", {}).get("fr", ""),
             "level": base.get("level", 0),
-            "type": equipment_map.get(base.get("itemTypeId"), "Inconnu"),
+            "type": equipment_map.get(base.get("equipmentItemTypeId"), "Inconnu"),
             "category": item_type_map.get(base.get("itemTypeId"), "Inconnu"),
             "rarity": base.get("rarity"),
             "properties": [property_map.get(p) for p in base.get("properties", []) if p in property_map],
@@ -125,10 +129,22 @@ def enrich_items(limit=None):
             obj["states"] = [state_map.get(s.get("stateId"), "") for s in base["states"]]
 
         obj["rarete"] = detect_rarity(obj["properties"])
+
+        # Vérification des champs essentiels
+        missing_fields = []
+        for field in ["type", "category", "rarity", "properties", "states"]:
+            value = obj.get(field)
+            if value in [None, "", [], {}]:
+                missing_fields.append(field)
+
+        if missing_fields:
+            stats["avec_warn"] += 1
+            log(f"[WARN] Item {obj.get('id')} ({obj.get('name')}) : champs manquants ou vides → {', '.join(missing_fields)}")
+
         enriched.append(obj)
 
+    log(f"[INFO] Statistiques : {stats['avec_warn']} objets avec champs incomplets sur {stats['total']}")
     return enriched
-
 
 def save(items):
     if not os.path.exists(OUTPUT_DIR):
