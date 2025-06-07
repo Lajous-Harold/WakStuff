@@ -67,7 +67,7 @@ def enrich_items(limit=None):
         try:
             if isinstance(p, dict):
                 pid = p.get("id")
-                pname = p.get("name", {}).get("fr", "")
+                pname = p.get("description", "")  # Remplacé "name" par "description"
                 if pid is not None:
                     property_map[pid] = pname
             else:
@@ -78,13 +78,14 @@ def enrich_items(limit=None):
 
     action_map = {}
     for a in actions:
-        if isinstance(a, dict) and "description" in a:
-            aid = a.get("id")
-            adesc = a.get("description", {}).get("fr", "")
-            if aid is not None:
-                action_map[aid] = adesc
-        else:
-            log(f"[WARN] Entrée inattendue dans actions : {repr(a)}")
+        try:
+            if isinstance(a, dict) and "id" in a and "description" in a:
+                aid = a["id"]
+                desc = a["description"].get("fr", "")
+                action_map[aid] = desc
+        except Exception as e:
+            log(f"[WARN] actionMap : {e} → entrée : {repr(a)}")
+
 
     state_map = {}
     for s in states:
