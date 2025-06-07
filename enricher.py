@@ -6,9 +6,17 @@ from datetime import datetime
 DATA_DIR = "data"
 OUTPUT_DIR = "output"
 OUTPUT_FILE = "items_enriched.json"
+LOG_FILE = "log.txt"
+
+def reset_log():
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        f.write("")  # Vide le fichier log
 
 def log(msg):
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}")
+    timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(f"{timestamp} {msg}\n")
+    print(f"{timestamp} {msg}")
 
 def load_json(name):
     path = os.path.join(DATA_DIR, f"{name}.json")
@@ -132,6 +140,7 @@ def save(items):
     log(f"[OK] Fichier enrichi enregistré : {path}")
 
 def main():
+    reset_log()
     parser = argparse.ArgumentParser(description="Traitement des objets Wakfu enrichis.")
     parser.add_argument("--limit", type=int, help="Nombre maximal d'objets à traiter (défaut : tous)", default=None)
     args = parser.parse_args()
