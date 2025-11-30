@@ -27,9 +27,15 @@
   } @if (error) {
   <p class="status status-error">{{ error }}</p>
   } @if (!loading && !error && totalItems === 0 && searchQuery) {
-  <p class="status status-empty">Aucun item ne correspond à votre recherche "{{ searchQuery }}".</p>
+  <section class="card">
+    <p class="status status-empty">
+      Aucun item ne correspond à votre recherche "{{ searchQuery }}".
+    </p>
+  </section>
   } @if (!loading && !error && totalItems === 0 && !searchQuery) {
-  <p class="status status-empty">Aucun item pour le moment.</p>
+  <section class="card">
+    <p class="status status-empty">Aucun item pour le moment.</p>
+  </section>
   } @if (!loading && !error && totalItems > 0) {
   <!-- Paginator -->
   <div class="paginator card">

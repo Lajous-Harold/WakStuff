@@ -80,7 +80,15 @@
 /* Statuts */
 
 .status {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+}
+
+.status-loading {
+  color: #374151;
+}
+
+.status-error {
+  color: #b91c1c;
 }
 
 .status-info {
@@ -89,6 +97,51 @@
 
 .status-empty {
   color: #6b7280;
+}
+
+/* Paginator */
+
+.paginator {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.paginator-info {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.paginator-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.paginator-page {
+  font-size: 0.9rem;
+  color: #374151;
+  min-width: 90px;
+  text-align: center;
+}
+
+.paginator-size {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.select {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  font-size: 0.85rem;
 }
 
 /* Table imports */

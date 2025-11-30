@@ -13,8 +13,81 @@
     </div>
   </header>
 
-  @if (lastRunMessage) {
+  @if (loading) {
+  <p class="status status-loading">Chargement des imports...</p>
+  } @if (error) {
+  <p class="status status-error">{{ error }}</p>
+  } @if (lastRunMessage) {
   <p class="status status-info">{{ lastRunMessage }}</p>
+  } @if (!loading && !error) { @if (batches.length > 0) {
+  <!-- Paginator -->
+  <div class="paginator card">
+    <div class="paginator-info">
+      Affichage
+      <strong>{{ pageStartIndex }}</strong>
+      –
+      <strong>{{ pageEndIndex }}</strong>
+      sur
+      <strong>{{ totalBatches }}</strong>
+      imports
+    </div>
+
+    <div class="paginator-controls">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="goToFirstPage()"
+        [disabled]="pageIndex === 0"
+      >
+        «
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="goToPreviousPage()"
+        [disabled]="pageIndex === 0"
+      >
+        ‹
+      </button>
+
+      <span class="paginator-page">
+        Page
+        <strong>{{ pageIndex + 1 }}</strong>
+        / {{ totalPages }}
+      </span>
+
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="goToNextPage()"
+        [disabled]="pageIndex >= totalPages - 1"
+      >
+        ›
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="goToLastPage()"
+        [disabled]="pageIndex >= totalPages - 1"
+      >
+        »
+      </button>
+
+      <label class="paginator-size">
+        Imports / page
+        <select
+          class="select"
+          [value]="pageSize"
+          #pageSizeSelect
+          (change)="changePageSize(pageSizeSelect.value)"
+        >
+          @for (size of pageSizeOptions; track size) {
+          <option [value]="size">{{ size }}</option>
+          }
+        </select>
+      </label>
+    </div>
+  </div>
   }
 
   <section class="card">
@@ -35,7 +108,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (b of batches; track b.id) {
+          @for (b of pagedBatches; track b.id) {
           <tr>
             <td>{{ b.id }}</td>
             <td>{{ b.game_version || 'n/a' }}</td>
@@ -61,4 +134,5 @@
     <p class="status status-empty">Aucun import pour le moment.</p>
     }
   </section>
+  }
 </section>
