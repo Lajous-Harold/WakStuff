@@ -13,13 +13,16 @@
     </div>
   </header>
 
-  @if (loading) {
+  @if (loading && batches.length === 0) {
   <p class="status status-loading">Chargement des imports...</p>
   } @if (error) {
   <p class="status status-error">{{ error }}</p>
   } @if (lastRunMessage) {
   <p class="status status-info">{{ lastRunMessage }}</p>
-  } @if (!loading && !error) { @if (batches.length > 0) {
+  } @if (!error && batches.length > 0) { @if (loading) {
+  <p class="status status-loading">Import en cours...</p>
+  }
+
   <!-- Paginator -->
   <div class="paginator card">
     <div class="paginator-info">
@@ -88,12 +91,10 @@
       </label>
     </div>
   </div>
-  }
 
   <section class="card">
     <h3 class="card-title">Derniers imports</h3>
 
-    @if (batches.length > 0) {
     <div class="table-wrapper">
       <table class="imports-table">
         <thead>
@@ -130,9 +131,10 @@
         </tbody>
       </table>
     </div>
-    } @else {
+  </section>
+  } @else if (!error) {
+  <section class="card">
     <p class="status status-empty">Aucun import pour le moment.</p>
-    }
   </section>
   }
 </section>

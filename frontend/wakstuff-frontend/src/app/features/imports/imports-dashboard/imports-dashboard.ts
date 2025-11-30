@@ -45,7 +45,7 @@ export class ImportsDashboard implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private importsService: ImportsService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -87,7 +87,7 @@ export class ImportsDashboard implements OnInit {
           this.reloading = false;
           this.loading = false;
           this.cdr.detectChanges();
-        })
+        }),
       )
       .subscribe({
         next: (batches) => {
