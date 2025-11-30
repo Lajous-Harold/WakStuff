@@ -13,6 +13,6 @@ export const importsResolver: ResolveFn<ImportBatchDto[]> = () => {
     }),
     catchError((err) => {
       return of([]);
-    })
+    }),
   );
 };

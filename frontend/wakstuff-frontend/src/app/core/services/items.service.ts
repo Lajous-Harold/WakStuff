@@ -12,6 +12,8 @@ export interface WakstuffItem {
   rarity: string | null;
   type: string | null;
   element?: string | null;
+  icon_gfx_id?: number | null;
+  icon_url?: string | null;
   needs_review: boolean;
 }
 
@@ -29,7 +31,6 @@ export class ItemsService {
   constructor(private http: HttpClient) {}
 
   list(): Observable<WakstuffItem[]> {
-    // limit=0 pour récupérer tous les items
     return this.http
       .get<ItemsListResponse>(`${this.baseUrl}/?limit=0`)
       .pipe(map((response) => response.items || []));

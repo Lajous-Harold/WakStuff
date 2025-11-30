@@ -13,6 +13,6 @@ export const itemsResolver: ResolveFn<WakstuffItem[]> = () => {
     }),
     catchError((err) => {
       return of([]);
-    })
+    }),
   );
 };
