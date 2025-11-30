@@ -111,6 +111,15 @@
       @for (item of pagedItems; track item.id) {
       <li class="item-row">
         <div class="item-main">
+          @if (item.icon_url) {
+          <img
+            [src]="item.icon_url"
+            [alt]="item.name"
+            class="item-icon"
+            loading="lazy"
+            (error)="onImageError($event, item)"
+          />
+          }
           <span class="item-name"> #{{ item.id }} – {{ item.name }} </span>
           <span class="item-level"> Niveau {{ item.level ?? '?' }} </span>
         </div>

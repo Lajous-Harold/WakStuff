@@ -215,12 +215,36 @@
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
-  align-items: baseline;
+  align-items: center;
+}
+
+.item-icon {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  object-fit: contain;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  padding: 0.25rem;
+  flex-shrink: 0;
+  display: block;
+}
+
+.item-icon-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+  background: #f3f4f6;
+  flex-shrink: 0;
 }
 
 .item-name {
   font-weight: 500;
   color: #111827;
+  flex: 1;
 }
 
 .item-level {

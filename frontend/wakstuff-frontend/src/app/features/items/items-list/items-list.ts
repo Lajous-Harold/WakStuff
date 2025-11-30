@@ -192,4 +192,9 @@ export class ItemsList implements OnInit {
         },
       });
   }
+
+  onImageError(event: Event, item: WakstuffItem): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+  }
 }
