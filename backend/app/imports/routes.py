@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, current_app
 
 from ..pipeline.import_items import run_full_import
 from ..models import ImportBatch
@@ -21,6 +21,18 @@ def serialize_batch(batch: ImportBatch) -> dict:
     }
 
 
+def build_icon_url(icon_gfx_id: int | None) -> str | None:
+    """
+    Génère l'URL de l'icône d'un item à partir de son icon_gfx_id.
+    Utilise un proxy local pour contourner les problèmes CORS.
+    """
+    if not icon_gfx_id:
+        return None
+
+    # Utilise le proxy local avec l'URL complète
+    return f"http://localhost:5000/api/proxy/icon/{icon_gfx_id}"
+
+
 @imports_bp.post("/run")
 def run_import():
     """
@@ -29,10 +41,8 @@ def run_import():
     batch = run_full_import()
 
     payload = serialize_batch(batch)
-    # alias pratique pour le front
     payload["batch_id"] = batch.id
 
-    # 201 = "created" puisqu'on crée un nouveau batch d'import
     return jsonify(payload), 201
 
 
@@ -41,10 +51,6 @@ def list_imports():
     """
     Retourne les derniers imports, le plus récent en premier.
     """
-    batches = (
-        ImportBatch.query.order_by(ImportBatch.started_at.desc())
-        .limit(20)
-        .all()
-    )
+    batches = ImportBatch.query.order_by(ImportBatch.started_at.desc()).limit(20).all()
 
     return jsonify([serialize_batch(b) for b in batches]), 200

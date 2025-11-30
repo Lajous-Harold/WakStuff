@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from ..imports.routes import build_icon_url
 from ..database import db
 from ..models import Item
 
@@ -14,6 +15,8 @@ def serialize_item(item: Item) -> dict:
         "level": item.level,
         "type": item.type,
         "element": item.element,
+        "icon_gfx_id": item.icon_gfx_id,
+        "icon_url": build_icon_url(item.icon_gfx_id),
         "needs_review": item.needs_review,
     }
 
@@ -40,13 +43,12 @@ def list_items():
 
     query = Item.query.order_by(Item.level.asc(), Item.id.asc())
 
-    # Si limit = 0, récupérer tous les items
     if limit == 0:
         items = query.offset(offset).all()
     else:
         limit = max(1, limit)
         items = query.limit(limit).offset(offset).all()
-    
+
     total = db.session.query(db.func.count(Item.id)).scalar() or 0
 
     return jsonify(
@@ -72,6 +74,8 @@ def get_item(item_id: int):
         "type": item.type,
         "element": item.element,
         "stats": item.stats,
+        "icon_gfx_id": item.icon_gfx_id,
+        "icon_url": build_icon_url(item.icon_gfx_id),
         "description": item.description,
         "needs_review": item.needs_review,
     }, 200
