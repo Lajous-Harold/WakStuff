@@ -22,13 +22,13 @@ class WakfuClient:
         # URL de base stable
         self.base_url = (
             base_url
-            or os.getenv("WAKFU_GAMEDATA_BASE_URL", "https://wakfu.cdn.ankama.com/gamedata")
+            or os.getenv(
+                "WAKFU_GAMEDATA_BASE_URL", "https://wakfu.cdn.ankama.com/gamedata"
+            )
         ).rstrip("/")
 
         self.timeout = timeout
         self.session = session or requests.Session()
-
-    # ---------- config / version ----------
 
     @property
     def config_url(self) -> str:
@@ -47,11 +47,9 @@ class WakfuClient:
         """
         config = self._get_json(self.config_url)
 
-        # config est censé être un dict
         if not isinstance(config, dict):
             raise ValueError("Format inattendu pour config.json (dict attendu).")
 
-        # différentes clés possibles suivant comment Ankama structure le JSON
         candidates = [
             config.get("version"),
             config.get("gameDataVersion"),
@@ -65,10 +63,7 @@ class WakfuClient:
                 logger.info("Version Wakfu détectée depuis config.json : %s", version)
                 return version
 
-        # si on a rien trouvé, on lève une erreur explicite
         raise ValueError("Impossible de déterminer la version dans config.json")
-
-    # ---------- items ----------
 
     def fetch_all_items(self, version: Optional[str] = None) -> List[Dict[str, Any]]:
         """
@@ -88,7 +83,9 @@ class WakfuClient:
             if isinstance(maybe_items, list):
                 return maybe_items
 
-        raise ValueError("Format inattendu pour items.json (ni liste ni dict['items']).")
+        raise ValueError(
+            "Format inattendu pour items.json (ni liste ni dict['items'])."
+        )
 
     def iter_all_items(self, version: Optional[str] = None) -> Iterable[Dict[str, Any]]:
         """

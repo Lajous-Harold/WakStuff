@@ -20,9 +20,7 @@ class ImportBatch(db.Model):
         nullable=True,
     )
 
-    # Version de gamedata utilisée pour cet import (issue de config.json)
     game_version = db.Column(db.String(64), nullable=True)
-
     status = db.Column(db.String(32), default="running")
     total_items = db.Column(db.Integer, default=0)
     error_count = db.Column(db.Integer, default=0)
@@ -34,6 +32,7 @@ class ItemRaw(db.Model):
     """
     JSON brut de l’API Wakfu (items.json) pour debug / reprocessing.
     """
+
     __tablename__ = "item_raw"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -53,6 +52,7 @@ class Item(db.Model):
     """
     Item normalisé WakStuff, utilisé par le front.
     """
+
     __tablename__ = "items"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -64,6 +64,8 @@ class Item(db.Model):
 
     type = db.Column(db.String(128))
     element = db.Column(db.String(64))
+
+    icon_gfx_id = db.Column(db.Integer)
 
     stats = db.Column(db.JSON)
     description = db.Column(db.Text)

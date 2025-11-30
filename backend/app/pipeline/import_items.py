@@ -22,10 +22,7 @@ def _extract_wakfu_id(raw: Dict[str, Any]) -> Optional[int]:
     item_def = definition.get("item") or {}
 
     wakfu_id = (
-        item_def.get("id")
-        or raw.get("id")
-        or raw.get("wakfuId")
-        or raw.get("uid")
+        item_def.get("id") or raw.get("id") or raw.get("wakfuId") or raw.get("uid")
     )
 
     return wakfu_id
@@ -67,13 +64,11 @@ def run_full_import(batch: Optional[ImportBatch] = None) -> ImportBatch:
 
         wakfu_id = _extract_wakfu_id(raw)
         if wakfu_id is None:
-            # On ne tente même pas l'insert si on n'a pas d'ID exploitable
             error_count += 1
             print("[WARN] Item sans wakfu_id, ignoré")
             continue
 
         try:
-            # 1) stock brut
             raw_entry = ItemRaw(
                 wakfu_id=wakfu_id,
                 raw_json=raw,
@@ -81,7 +76,6 @@ def run_full_import(batch: Optional[ImportBatch] = None) -> ImportBatch:
             )
             db.session.add(raw_entry)
 
-            # 2) normalisation
             clean = sanitize_item(raw)
 
             item = Item.query.filter_by(wakfu_id=clean["wakfu_id"]).first()
@@ -94,6 +88,7 @@ def run_full_import(batch: Optional[ImportBatch] = None) -> ImportBatch:
             item.level = clean["level"]
             item.type = clean["type"]
             item.element = clean["element"]
+            item.icon_gfx_id = clean["icon_gfx_id"]
             item.stats = clean["stats"]
             item.description = clean["description"]
             item.needs_review = clean["needs_review"]
@@ -101,8 +96,6 @@ def run_full_import(batch: Optional[ImportBatch] = None) -> ImportBatch:
         except Exception as exc:
             error_count += 1
             print(f"[WARN] Erreur traitement item {wakfu_id}: {exc!r}")
-            # IMPORTANT : on ne commit pas ici, on laisse passer au suivant
-            # et on ne fait pas rollback() dans la boucle, pour ne pas tout perdre.
 
     batch.total_items = total_items
     batch.error_count = error_count
