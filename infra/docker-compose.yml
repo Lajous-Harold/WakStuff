@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16
+    container_name: wakstuff-db
+    restart: unless-stopped
+    env_file:
+      - ./env/.env.database
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../infra/backend.Dockerfile
+    container_name: wakstuff-backend
+    restart: unless-stopped
+    env_file:
+      - ./env/.env.backend
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: ../frontend/wakstuff-frontend
+      dockerfile: ../../infra/frontend.Dockerfile
+    container_name: wakstuff-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+
+volumes:
+  db_data:

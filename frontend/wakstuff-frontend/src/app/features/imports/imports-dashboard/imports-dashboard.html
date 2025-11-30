@@ -1,0 +1,64 @@
+<section class="imports-page">
+  <header class="page-header">
+    <h2 class="page-title">Imports WakStuff</h2>
+
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="runImport()" [disabled]="loading">
+        {{ loading ? 'Import en cours...' : 'Lancer un import' }}
+      </button>
+
+      <button class="btn btn-ghost" (click)="loadBatches()" [disabled]="reloading">
+        {{ reloading ? 'Chargement...' : 'Recharger' }}
+      </button>
+    </div>
+  </header>
+
+  @if (lastRunMessage) {
+  <p class="status status-info">{{ lastRunMessage }}</p>
+  }
+
+  <section class="card">
+    <h3 class="card-title">Derniers imports</h3>
+
+    @if (batches.length > 0) {
+    <div class="table-wrapper">
+      <table class="imports-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Version</th>
+            <th>Début</th>
+            <th>Fin</th>
+            <th>Statut</th>
+            <th>Items</th>
+            <th>Erreurs</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of batches; track b.id) {
+          <tr>
+            <td>{{ b.id }}</td>
+            <td>{{ b.game_version || 'n/a' }}</td>
+            <td>{{ b.started_at }}</td>
+            <td>{{ b.ended_at }}</td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-ok]="b.status === 'success'"
+                [class.badge-error]="b.status === 'error'"
+              >
+                {{ b.status }}
+              </span>
+            </td>
+            <td>{{ b.total_items }}</td>
+            <td>{{ b.error_count }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    } @else {
+    <p class="status status-empty">Aucun import pour le moment.</p>
+    }
+  </section>
+</section>

@@ -1,0 +1,125 @@
+<section class="items-page">
+  <header class="page-header">
+    <h2 class="page-title">Items WakStuff</h2>
+
+    <div class="header-actions">
+      <div class="search-box">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher par nom, type, rareté..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()"
+        />
+        @if (searchQuery) {
+        <button class="clear-search" (click)="searchQuery = ''; onSearchChange()">✕</button>
+        }
+      </div>
+
+      <button class="btn btn-primary" (click)="reload()" [disabled]="reloading">
+        {{ reloading ? 'Chargement...' : 'Recharger' }}
+      </button>
+    </div>
+  </header>
+
+  @if (loading) {
+  <p class="status status-loading">Chargement des items...</p>
+  } @if (error) {
+  <p class="status status-error">{{ error }}</p>
+  } @if (!loading && !error && totalItems === 0 && searchQuery) {
+  <p class="status status-empty">Aucun item ne correspond à votre recherche "{{ searchQuery }}".</p>
+  } @if (!loading && !error && totalItems === 0 && !searchQuery) {
+  <p class="status status-empty">Aucun item pour le moment.</p>
+  } @if (!loading && !error && totalItems > 0) {
+  <!-- Paginator -->
+  <div class="paginator card">
+    <div class="paginator-info">
+      Affichage
+      <strong>{{ pageStartIndex }}</strong>
+      –
+      <strong>{{ pageEndIndex }}</strong>
+      sur
+      <strong>{{ totalItems }}</strong>
+      items
+    </div>
+
+    <div class="paginator-controls">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="goToFirstPage()"
+        [disabled]="pageIndex === 0"
+      >
+        «
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="goToPreviousPage()"
+        [disabled]="pageIndex === 0"
+      >
+        ‹
+      </button>
+
+      <span class="paginator-page">
+        Page
+        <strong>{{ pageIndex + 1 }}</strong>
+        / {{ totalPages }}
+      </span>
+
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="goToNextPage()"
+        [disabled]="pageIndex >= totalPages - 1"
+      >
+        ›
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="goToLastPage()"
+        [disabled]="pageIndex >= totalPages - 1"
+      >
+        »
+      </button>
+
+      <label class="paginator-size">
+        Items / page
+        <select
+          class="select"
+          [value]="pageSize"
+          #pageSizeSelect
+          (change)="changePageSize(pageSizeSelect.value)"
+        >
+          @for (size of pageSizeOptions; track size) {
+          <option [value]="size">{{ size }}</option>
+          }
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="card items-card">
+    <ul class="items-list">
+      @for (item of pagedItems; track item.id) {
+      <li class="item-row">
+        <div class="item-main">
+          <span class="item-name"> #{{ item.id }} – {{ item.name }} </span>
+          <span class="item-level"> Niveau {{ item.level ?? '?' }} </span>
+        </div>
+
+        <div class="item-meta">
+          <span class="chip"> Rareté : {{ item.rarity || 'n/a' }} </span>
+          <span class="chip"> Type : {{ item.type || 'n/a' }} </span>
+
+          @if (item.needs_review) {
+          <span class="chip chip-warn">À revoir</span>
+          }
+        </div>
+      </li>
+      }
+    </ul>
+  </div>
+  }
+</section>

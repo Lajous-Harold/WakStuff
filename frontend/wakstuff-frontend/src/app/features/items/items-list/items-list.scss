@@ -1,0 +1,265 @@
+.items-page {
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.search-box {
+  position: relative;
+  max-width: 400px;
+  flex: 1;
+  min-width: 250px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.625rem 2.5rem 0.625rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  transition: var(--transition);
+  background: white;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  }
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+}
+
+.clear-search {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--text-muted);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: var(--transition);
+
+  &:hover {
+    background: var(--text-secondary);
+  }
+}
+
+.page-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.btn {
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out,
+    box-shadow 0.15s ease-out;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #f9fafb;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+
+  &:hover:not(:disabled) {
+    background: #1d4ed8;
+  }
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #111827;
+  border-color: #e5e7eb;
+
+  &:hover:not(:disabled) {
+    background: #f3f4f6;
+  }
+}
+
+.status {
+  font-size: 0.95rem;
+}
+
+.status-loading {
+  color: #374151;
+}
+
+.status-error {
+  color: #b91c1c;
+}
+
+.status-empty {
+  color: #6b7280;
+}
+
+/* Cards / blocs */
+
+.card {
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+/* Paginator */
+
+.paginator {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.paginator-info {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.paginator-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.paginator-page {
+  font-size: 0.9rem;
+  color: #374151;
+  min-width: 90px;
+  text-align: center;
+}
+
+.paginator-size {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.select {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  font-size: 0.85rem;
+}
+
+/* Liste des items */
+
+.items-card {
+  padding: 0;
+}
+
+.items-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item-row {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: #f9fafb;
+  }
+}
+
+.item-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.item-name {
+  font-weight: 500;
+  color: #111827;
+}
+
+.item-level {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #4b5563;
+}
+
+.chip-warn {
+  border-color: #f97316;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+/* Responsive small screens */
+
+@media (max-width: 640px) {
+  .items-page {
+    padding: 1rem;
+  }
+
+  .item-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

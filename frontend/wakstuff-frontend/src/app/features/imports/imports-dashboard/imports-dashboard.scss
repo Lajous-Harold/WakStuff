@@ -1,0 +1,163 @@
+.imports-page {
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Boutons (mêmes styles que items pour cohérence) */
+
+.btn {
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out,
+    box-shadow 0.15s ease-out;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #f9fafb;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+
+  &:hover:not(:disabled) {
+    background: #1d4ed8;
+  }
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #111827;
+  border-color: #e5e7eb;
+
+  &:hover:not(:disabled) {
+    background: #f3f4f6;
+  }
+}
+
+/* Card / bloc */
+
+.card {
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 0.75rem 1rem 1rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0 0 0.75rem;
+}
+
+/* Statuts */
+
+.status {
+  font-size: 0.9rem;
+}
+
+.status-info {
+  color: #1d4ed8;
+}
+
+.status-empty {
+  color: #6b7280;
+}
+
+/* Table imports */
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.imports-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.imports-table th,
+.imports-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.imports-table thead {
+  background: #f9fafb;
+}
+
+.imports-table th {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.imports-table tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.imports-table tbody tr:hover {
+  background: #eff6ff;
+}
+
+/* Badges */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #4b5563;
+}
+
+.badge-ok {
+  border-color: #16a34a;
+  background: #ecfdf3;
+  color: #166534;
+}
+
+.badge-error {
+  border-color: #dc2626;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+/* Responsive */
+
+@media (max-width: 640px) {
+  .imports-page {
+    padding: 1rem;
+  }
+}
