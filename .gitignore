@@ -7,6 +7,10 @@ __pycache__/
 .env*
 !.env*.example
 
+# pgAdmin (fichiers auto-générés avec credentials)
+infra/servers.json
+infra/pgpass
+
 # Node / Angular
 frontend/wakstuff-frontend/node_modules/
 frontend/wakstuff-frontend/dist/
