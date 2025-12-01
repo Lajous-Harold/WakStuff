@@ -38,15 +38,12 @@ export class HarvestResourcesComponent implements OnInit {
   loadResources() {
     this.loading = true;
     this.error = null;
-    console.log('Starting to load harvest resources...');
 
     this.harvestService.getHarvestResources().subscribe({
       next: (response) => {
-        console.log('Received response:', response);
         this.resources = response.resources;
         this.totalResources = response.total;
         this.groupResourcesByRarity();
-        console.log('Grouped resources:', this.groupedResources);
         this.loading = false;
       },
       error: (err) => {
@@ -72,8 +69,6 @@ export class HarvestResourcesComponent implements OnInit {
       }
       groupMap.get(rangeLabel)!.push(resource);
     });
-
-    console.log('ID range groups:', Array.from(groupMap.keys()));
 
     // Trier chaque groupe par ID
     groupMap.forEach((group) => {
