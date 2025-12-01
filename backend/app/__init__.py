@@ -23,9 +23,13 @@ def create_app() -> Flask:
     from .items.routes import items_bp
     from .imports.routes import imports_bp
     from .proxy.routes import proxy_bp
+    from .wakfu_data.routes import bp as wakfu_data_bp
+    from .test_views.routes import test_views_bp
 
     app.register_blueprint(items_bp, url_prefix="/api/items")
     app.register_blueprint(imports_bp, url_prefix="/api/imports")
     app.register_blueprint(proxy_bp, url_prefix="/api/proxy")
+    app.register_blueprint(wakfu_data_bp, url_prefix="/api/wakfu")
+    app.register_blueprint(test_views_bp)
 
     return app

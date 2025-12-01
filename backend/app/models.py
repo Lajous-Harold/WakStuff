@@ -48,6 +48,117 @@ class ItemRaw(db.Model):
     batch = db.relationship("ImportBatch", back_populates="raw_items")
 
 
+class Action(db.Model):
+    """
+    Actions Wakfu (actions.json) pour décoder les effets des items.
+    """
+    __tablename__ = "actions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    wakfu_id = db.Column(db.Integer, nullable=False, unique=True, index=True)
+
+    effect = db.Column(db.Text)
+    description = db.Column(db.JSON)  # {"fr": "...", "en": "...", ...}
+
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=now_utc,
+        nullable=False,
+    )
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        default=now_utc,
+        onupdate=now_utc,
+        nullable=False,
+    )
+
+
+class State(db.Model):
+    """
+    États Wakfu (states.json) pour les buffs/debuffs.
+    """
+    __tablename__ = "states"
+
+    id = db.Column(db.Integer, primary_key=True)
+    wakfu_id = db.Column(db.Integer, nullable=False, unique=True, index=True)
+
+    title = db.Column(db.JSON)  # {"fr": "...", "en": "...", ...}
+    description = db.Column(db.JSON)
+
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=now_utc,
+        nullable=False,
+    )
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        default=now_utc,
+        onupdate=now_utc,
+        nullable=False,
+    )
+
+
+class Job(db.Model):
+    """
+    Métiers Wakfu (jobs.json).
+    """
+    __tablename__ = "jobs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    wakfu_id = db.Column(db.Integer, nullable=False, unique=True, index=True)
+
+    title = db.Column(db.JSON)  # {"fr": "...", "en": "...", ...}
+    description = db.Column(db.JSON)
+
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=now_utc,
+        nullable=False,
+    )
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        default=now_utc,
+        onupdate=now_utc,
+        nullable=False,
+    )
+
+
+class ItemCategory(db.Model):
+    """
+    Catégories d'items pour classification (équipements, ressources, consommables, etc.).
+    """
+    __tablename__ = "item_categories"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False, unique=True)
+    description = db.Column(db.Text)
+
+    # Règles de classification basées sur les typeId
+    type_ids = db.Column(db.JSON)  # Liste des typeId appartenant à cette catégorie
+
+
+class Recipe(db.Model):
+    """
+    Recettes de craft Wakfu pour calculateur de ressources.
+    """
+    __tablename__ = "recipes"
+
+    id = db.Column(db.Integer, primary_key=True)
+    wakfu_id = db.Column(db.Integer, nullable=False, unique=True, index=True)
+
+    result_item_id = db.Column(db.Integer, db.ForeignKey("items.wakfu_id"))
+    job_id = db.Column(db.Integer)  # ID du métier requis
+
+    ingredients = db.Column(db.JSON)  # [{"item_id": 123, "quantity": 5}, ...]
+    craft_level = db.Column(db.Integer)  # Niveau requis du métier
+
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=now_utc,
+        nullable=False,
+    )
+
+
 class Item(db.Model):
     """
     Item normalisé WakStuff, utilisé par le front.
@@ -65,10 +176,17 @@ class Item(db.Model):
     type = db.Column(db.String(128))
     element = db.Column(db.String(64))
 
+    # Catégorisation
+    category_id = db.Column(db.Integer, db.ForeignKey("item_categories.id"))
+    category = db.relationship("ItemCategory", backref="items")
+
     icon_gfx_id = db.Column(db.Integer)
 
     stats = db.Column(db.JSON)
     description = db.Column(db.Text)
+
+    # Effets parsés avec descriptions complètes
+    parsed_effects = db.Column(db.JSON)  # Résultat du parseEffect
 
     needs_review = db.Column(db.Boolean, default=False)
 
