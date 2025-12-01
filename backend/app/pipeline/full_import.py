@@ -198,30 +198,26 @@ def _import_item_types(
     client: WakfuClient, version: str
 ) -> Dict[int, Dict[str, Any]]:
     """Import et enrichissement des types d'items depuis itemTypes.json."""
+    from .wakfu_config import WAKFU_ITEM_CATEGORIES
+    
     item_types_data = client.fetch_all_item_types(version)
     item_types_map = enrich_item_types_from_api(item_types_data)
 
-    # Créer/mettre à jour les catégories dans la DB
-    categories_created = set()
-
-    for type_id, type_info in item_types_map.items():
-        category_name = type_info.get("category", "misc")
-
-        if category_name not in categories_created:
-            category = ItemCategory.query.filter_by(name=category_name).first()
-            if category is None:
-                category = ItemCategory(name=category_name)
-                db.session.add(category)
-
-            # Ajouter ce typeId à la catégorie
-            type_ids = category.type_ids or []
-            if type_id not in type_ids:
-                type_ids.append(type_id)
-                category.type_ids = type_ids
-
-            categories_created.add(category_name)
+    # Créer toutes les catégories depuis la configuration
+    logger.info("Création des catégories depuis wakfu_config...")
+    
+    for category_name, category_config in WAKFU_ITEM_CATEGORIES.items():
+        category = ItemCategory.query.filter_by(name=category_name).first()
+        if category is None:
+            category = ItemCategory(name=category_name)
+            db.session.add(category)
+        
+        # Mettre à jour les informations de la catégorie
+        category.description = category_config.get("description", "")
+        category.type_ids = category_config.get("type_ids", [])
 
     db.session.commit()
+    logger.info(f"Catégories créées: {len(WAKFU_ITEM_CATEGORIES)}")
     logger.info(f"Types d'items importés: {len(item_types_map)}")
 
     return item_types_map
@@ -293,19 +289,14 @@ def _import_items_with_effects(
                 except (ValueError, AttributeError):
                     item.rarity = clean["rarity"]
 
-            # Catégorie - Reconstru le chemin complet
+            # Catégorie - Utiliser directement le chemin complet
             category_path = classification["category"]
-            if classification.get("subcategory") and classification["subcategory"] != "general":
-                # Si la subcategory contient déjà un point, elle est déjà complète
-                if "." in classification["subcategory"]:
-                    category_path = f"{classification['category']}.{classification['subcategory']}"
-                else:
-                    category_path = f"{classification['category']}.{classification['subcategory']}"
             
             category = ItemCategory.query.filter_by(name=category_path).first()
             if not category:
                 # Fallback: chercher une catégorie qui commence par le même préfixe
-                category = ItemCategory.query.filter(ItemCategory.name.like(f"{classification['category']}%")).first()
+                prefix = category_path.split(".")[0]
+                category = ItemCategory.query.filter(ItemCategory.name.like(f"{prefix}%")).first()
             if category:
                 item.category = category
 

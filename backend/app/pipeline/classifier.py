@@ -38,13 +38,13 @@ def get_category_from_type_id(type_id: int) -> Optional[str]:
 
 def classify_item(item_data: Dict[str, Any]) -> Dict[str, str]:
     """
-    Classifie un item en déterminant sa catégorie et sous-catégorie.
+    Classifie un item en déterminant sa catégorie complète.
 
     Args:
         item_data: Données brutes de l'item
 
     Returns:
-        Dict avec 'category' et 'subcategory'
+        Dict avec 'category' (chemin complet, ex: "equipments.weapons.one_handed")
     """
     definition = item_data.get("definition", {})
     item_def = definition.get("item", {})
@@ -58,25 +58,27 @@ def classify_item(item_data: Dict[str, Any]) -> Dict[str, str]:
     # Déterminer la catégorie
     category_path = get_category_from_type_id(type_id)
 
-    if category_path and "." in category_path:
-        category, subcategory = category_path.split(".", 1)
-    else:
-        category = category_path or "misc"
-        subcategory = None
+    if category_path:
+        return {"category": category_path}
 
-    # Heuristiques supplémentaires
-    if not subcategory:
-        # Vérifier si c'est une ressource craftable
-        if _is_craftable_resource(item_data):
-            category = "resources"
-            subcategory = "crafting_ingredients"
+    # Heuristiques supplémentaires si typeId non trouvé
+    # Vérifier si c'est une ressource craftable
+    if _is_craftable_resource(item_data):
+        return {"category": "resources.crafting_materials"}
 
-        # Vérifier si c'est un consommable
-        elif _is_consumable(item_data):
-            category = "consumables"
-            subcategory = "food" if _is_food(item_data) else "potions"
+    # Vérifier si c'est un consommable
+    if _is_consumable(item_data):
+        if _is_food(item_data):
+            return {"category": "consumables.food"}
+        return {"category": "consumables.potions"}
 
-    return {"category": category, "subcategory": subcategory or "general"}
+    # Vérifier si c'est un équipement
+    equip_effects = definition.get("equipEffects", [])
+    if equip_effects:
+        return {"category": "equipments"}
+
+    # Fallback sur misc
+    return {"category": "misc"}
 
 
 def _is_craftable_resource(item_data: Dict[str, Any]) -> bool:
@@ -170,8 +172,8 @@ def enrich_item_types_from_api(
         name_fr = title.get("fr", "")
         name_en = title.get("en", "")
 
-        # Déterminer la catégorie approximative depuis le nom
-        category = _guess_category_from_name(name_en or name_fr)
+        # Déterminer la catégorie depuis notre configuration
+        category = get_category_from_type_id(type_id) or "misc"
 
         type_mapping[type_id] = {
             "id": type_id,
@@ -181,25 +183,3 @@ def enrich_item_types_from_api(
         }
 
     return type_mapping
-
-
-def _guess_category_from_name(name: str) -> str:
-    """Devine la catégorie à partir du nom du type (heuristique)."""
-    name_lower = name.lower()
-
-    if any(word in name_lower for word in ["weapon", "arme", "sword", "épée", "staff", "bâton"]):
-        return "equipments.weapons"
-    if any(word in name_lower for word in ["armor", "armure", "helmet", "casque"]):
-        return "equipments.armor"
-    if any(word in name_lower for word in ["ring", "anneau", "amulet", "amulette"]):
-        return "equipments.accessories"
-    if any(word in name_lower for word in ["resource", "ressource", "ore", "minerai"]):
-        return "resources"
-    if any(word in name_lower for word in ["food", "nourriture", "potion"]):
-        return "consumables"
-    if any(word in name_lower for word in ["quest", "quête"]):
-        return "quest_items"
-    if any(word in name_lower for word in ["cosmetic", "costume", "costume"]):
-        return "cosmetics"
-
-    return "misc"

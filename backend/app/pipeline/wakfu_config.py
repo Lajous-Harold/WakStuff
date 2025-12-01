@@ -1,159 +1,310 @@
 """
 Configuration des catégories d'items basée sur les typeIds réels de Wakfu.
 
-Source: itemTypes.json de l'API Wakfu
-Ces valeurs peuvent être mises à jour après analyse de itemTypes.json
+Source: itemTypes.json de l'API Wakfu version 1.90.1.47
+Dernière mise à jour: Décembre 2025
 """
 
-# Catégories principales et leurs typeIds
+# Catégories principales et leurs typeIds (basés sur l'API réelle)
 WAKFU_ITEM_CATEGORIES = {
     # ========== ÉQUIPEMENTS ==========
     "equipments.helmets": {
-        "type_ids": [119],
-        "description": "Casques et coiffes",
+        "type_ids": [134],
+        "description": "Casques",
+        "label_fr": "Casques",
+        "label_en": "Helmets",
     },
     "equipments.chest": {
-        "type_ids": [136],
+        "type_ids": [118, 136, 575],
         "description": "Plastrons et armures de torse",
+        "label_fr": "Plastrons",
+        "label_en": "Breastplates",
     },
     "equipments.shoulders": {
-        "type_ids": [133],
+        "type_ids": [138],
         "description": "Épaulettes",
+        "label_fr": "Épaulettes",
+        "label_en": "Epaulettes",
     },
     "equipments.legs": {
-        "type_ids": [138],
+        "type_ids": [],  # Pas de typeId spécifique trouvé
         "description": "Pantalons et jambières",
+        "label_fr": "Jambes",
+        "label_en": "Legs",
     },
     "equipments.back": {
         "type_ids": [132],
         "description": "Capes et manteaux",
+        "label_fr": "Capes",
+        "label_en": "Cloaks",
     },
     "equipments.belt": {
-        "type_ids": [134],
+        "type_ids": [133],
         "description": "Ceintures",
+        "label_fr": "Ceintures",
+        "label_en": "Belts",
     },
     "equipments.boots": {
-        "type_ids": [139],
+        "type_ids": [119],
         "description": "Bottes",
+        "label_fr": "Bottes",
+        "label_en": "Boots",
     },
     "equipments.amulet": {
         "type_ids": [120],
         "description": "Amulettes",
+        "label_fr": "Amulettes",
+        "label_en": "Amulets",
     },
     "equipments.ring": {
         "type_ids": [103],
         "description": "Anneaux",
+        "label_fr": "Anneaux",
+        "label_en": "Rings",
     },
     "equipments.shield": {
-        "type_ids": [189],
+        "type_ids": [100, 189],
         "description": "Boucliers",
+        "label_fr": "Boucliers",
+        "label_en": "Shields",
     },
     "equipments.weapons.one_handed": {
-        "type_ids": [108, 110, 111, 113, 114, 115, 117],
-        "description": "Armes à une main (épées, dagues, baguettes, etc.)",
+        "type_ids": [108, 110, 112, 113, 115],  # Baguettes, Épées, Dagues, Bâtons, Aiguilles
+        "description": "Armes à une main",
+        "label_fr": "Armes 1 main",
+        "label_en": "One-Handed Weapons",
     },
     "equipments.weapons.two_handed": {
-        "type_ids": [223, 253, 254, 480, 518, 520],
-        "description": "Armes à deux mains (épées, haches, bâtons, etc.)",
+        "type_ids": [101, 111, 114, 117, 223, 253],  # Haches, Pelles, Marteaux, Arcs, Épées 2H, Bâtons 2H
+        "description": "Armes à deux mains",
+        "label_fr": "Armes 2 mains",
+        "label_en": "Two-Handed Weapons",
     },
     "equipments.pet": {
-        "type_ids": [582],
+        "type_ids": [582, 827],  # Familiers réels + Apparences
         "description": "Familiers",
+        "label_fr": "Familiers",
+        "label_en": "Pets",
     },
     "equipments.mount": {
-        "type_ids": [611],
+        "type_ids": [480],  # Montures
         "description": "Montures",
+        "label_fr": "Montures",
+        "label_en": "Mounts",
     },
     "equipments.costume": {
-        "type_ids": [647],
-        "description": "Costumes et cosmétiques",
+        "type_ids": [525],
+        "description": "Cosmétiques",
+        "label_fr": "Cosmétiques",
+        "label_en": "Cosmetics",
     },
     "equipments.emblem": {
         "type_ids": [646],
         "description": "Emblèmes",
+        "label_fr": "Emblèmes",
+        "label_en": "Emblems",
     },
-    # ========== RESSOURCES ==========
+    # ========== RESSOURCES - RÉCOLTES ==========
     "resources.ore": {
-        "type_ids": [475],
+        "type_ids": [281, 514],  # Récolte du Mineur + Raffinage du Mineur
         "description": "Minerais",
+        "label_fr": "Minerais",
+        "label_en": "Ores",
     },
     "resources.plants": {
-        "type_ids": [476],
+        "type_ids": [313, 419, 463],  # Récolte Herboriste + Semences + Raffinage
         "description": "Plantes et herbes",
+        "label_fr": "Plantes",
+        "label_en": "Plants",
     },
     "resources.wood": {
-        "type_ids": [477],
+        "type_ids": [306, 327],  # Récolte Forestier + Raffinage
         "description": "Bois",
+        "label_fr": "Bois",
+        "label_en": "Wood",
     },
     "resources.fish": {
-        "type_ids": [478],
+        "type_ids": [308, 567],  # Récolte Pêcheur + Raffinage
         "description": "Poissons",
+        "label_fr": "Poissons",
+        "label_en": "Fish",
     },
     "resources.meat": {
-        "type_ids": [479],
+        "type_ids": [282, 568],  # Récolte Trappeur + Raffinage
         "description": "Viandes",
+        "label_fr": "Viandes",
+        "label_en": "Meat",
     },
     "resources.cereals": {
-        "type_ids": [480],
-        "description": "Céréales",
+        "type_ids": [309, 393],  # Récolte Paysan + Raffinage
+        "description": "Céréales et légumes",
+        "label_fr": "Céréales",
+        "label_en": "Cereals",
     },
     "resources.vegetables": {
-        "type_ids": [481],
+        "type_ids": [],  # Inclus dans Céréales (Paysan)
         "description": "Légumes",
+        "label_fr": "Légumes",
+        "label_en": "Vegetables",
     },
     "resources.leather": {
-        "type_ids": [515],
-        "description": "Cuirs et peaux",
+        "type_ids": [574],  # Composant Maroquinier
+        "description": "Cuirs",
+        "label_fr": "Cuirs",
+        "label_en": "Leather",
     },
     "resources.gems": {
-        "type_ids": [516],
-        "description": "Gemmes et pierres précieuses",
+        "type_ids": [294, 576],  # Havre-Gemmes + Composant Bijoutier
+        "description": "Gemmes",
+        "label_fr": "Gemmes",
+        "label_en": "Gems",
     },
     "resources.cloth": {
-        "type_ids": [517],
-        "description": "Tissus et étoffes",
+        "type_ids": [570],  # Composant Tailleur
+        "description": "Tissus",
+        "label_fr": "Tissus",
+        "label_en": "Cloth",
     },
     "resources.crafting_materials": {
-        "type_ids": [482, 483, 484, 485, 486, 487],
-        "description": "Matériaux de craft divers",
+        "type_ids": [569, 571, 577, 578, 761],  # Composants divers métiers
+        "description": "Matériaux de craft",
+        "label_fr": "Composants de craft",
+        "label_en": "Crafting Components",
+    },
+    "resources.monster": {
+        "type_ids": [531],  # Ressources de monstres
+        "description": "Ressources de monstres",
+        "label_fr": "Ressources de monstres",
+        "label_en": "Monster Resources",
+    },
+    "resources.misc": {
+        "type_ids": [226, 758, 809, 822],  # Ressources diverses + Récoltes diverses
+        "description": "Ressources diverses",
+        "label_fr": "Ressources diverses",
+        "label_en": "Miscellaneous Resources",
     },
     # ========== CONSOMMABLES ==========
     "consumables.food": {
-        "type_ids": [520, 521, 522, 523],
+        "type_ids": [745, 757],
         "description": "Nourriture",
+        "label_fr": "Nourriture",
+        "label_en": "Food",
     },
     "consumables.potions": {
-        "type_ids": [100],
-        "description": "Potions",
+        "type_ids": [106, 746, 747],  # Consommables
+        "description": "Potions et consommables",
+        "label_fr": "Potions",
+        "label_en": "Potions",
     },
     "consumables.buffs": {
-        "type_ids": [528, 529],
-        "description": "Objets de buff temporaire",
+        "type_ids": [],
+        "description": "Buffs temporaires",
+        "label_fr": "Buffs",
+        "label_en": "Buffs",
     },
     # ========== AUTRES ==========
     "quest_items": {
-        "type_ids": [518, 519],
+        "type_ids": [551],
         "description": "Items de quête",
+        "label_fr": "Objets de quête",
+        "label_en": "Quest Items",
     },
     "bags": {
-        "type_ids": [519],
-        "description": "Sacs et conteneurs",
+        "type_ids": [218, 295, 415, 416, 535, 546, 566, 701, 702],
+        "description": "Sacs et décorations de Havre-Sac",
+        "label_fr": "Sacs",
+        "label_en": "Bags",
     },
     "keys": {
-        "type_ids": [530],
+        "type_ids": [317],
         "description": "Clés",
+        "label_fr": "Clés",
+        "label_en": "Keys",
     },
     "runes": {
-        "type_ids": [812],
+        "type_ids": [811],  # Enchantement
         "description": "Runes d'enchantement",
+        "label_fr": "Enchantements",
+        "label_en": "Enchantments",
     },
     "sublimations": {
-        "type_ids": [808],
+        "type_ids": [812],
         "description": "Sublimations",
+        "label_fr": "Sublimations",
+        "label_en": "Sublimations",
     },
     "tokens": {
-        "type_ids": [650],
+        "type_ids": [],
         "description": "Jetons et monnaies spéciales",
+        "label_fr": "Jetons",
+        "label_en": "Tokens",
+    },
+    "recipes": {
+        "type_ids": [719],
+        "description": "Recettes",
+        "label_fr": "Recettes",
+        "label_en": "Recipes",
+    },
+    "improvements": {
+        "type_ids": [602],
+        "description": "Améliorations",
+        "label_fr": "Améliorations",
+        "label_en": "Improvements",
+    },
+    "relics": {
+        "type_ids": [687],
+        "description": "Fragments de relique",
+        "label_fr": "Reliques",
+        "label_en": "Relics",
+    },
+    "sets": {
+        "type_ids": [604],
+        "description": "Panoplies",
+        "label_fr": "Panoplies",
+        "label_en": "Sets",
+    },
+    "tools": {
+        "type_ids": [537],
+        "description": "Outils",
+        "label_fr": "Outils",
+        "label_en": "Tools",
+    },
+    "furniture": {
+        "type_ids": [296, 297, 447, 449, 515, 534],
+        "description": "Mobilier et décoration",
+        "label_fr": "Mobilier",
+        "label_en": "Furniture",
+    },
+    "teleportation": {
+        "type_ids": [630],
+        "description": "Téléportation",
+        "label_fr": "Téléportation",
+        "label_en": "Teleportation",
+    },
+    "transformations": {
+        "type_ids": [738, 739],
+        "description": "Transformations",
+        "label_fr": "Transformations",
+        "label_en": "Transformations",
+    },
+    "events": {
+        "type_ids": [756],
+        "description": "Objets d'événements",
+        "label_fr": "Événements",
+        "label_en": "Events",
+    },
+    # Catégories génériques pour fallback
+    "equipments": {
+        "type_ids": [109, 518, 519, 520, 521],  # Équipements génériques
+        "description": "Équipements",
+        "label_fr": "Équipements",
+        "label_en": "Equipment",
+    },
+    "misc": {
+        "type_ids": [254, 385, 652, 751, 840],  # Divers non catégorisés
+        "description": "Divers",
+        "label_fr": "Divers",
+        "label_en": "Miscellaneous",
     },
 }
 
