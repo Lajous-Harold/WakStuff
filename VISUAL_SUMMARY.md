@@ -245,12 +245,10 @@
    │                    📚  DOCUMENTATION                        │
    └─────────────────────────────────────────────────────────────┘
 
-   📄  QUICKSTART.md               Guide de démarrage (5 min)
-   📄  FRANCAIS.md                 Guide complet en français
-   📄  WAKFU_IMPORT_README.md      Documentation technique
-   📄  IMPLEMENTATION_SUMMARY.md   Résumé de l'implémentation
+   📄  README.md                   Documentation principale
    📄  PROJECT_STRUCTURE.md        Structure du projet
-   📄  TODO.md                     Prochaines étapes
+   📄  TODO.md                     Roadmap et prochaines étapes
+   📄  VISUAL_SUMMARY.md           Vue d'ensemble visuelle
 
 
    ┌─────────────────────────────────────────────────────────────┐
@@ -272,7 +270,7 @@
    🆕  test_wakfu_import.py             Tests
    🆕  examples/craft_calculator_example.py
 
-   🆕  QUICKSTART.md                    + 5 autres docs
+   🆕  Documentation complète (README, PROJECT_STRUCTURE, TODO)
 
 
    ┌─────────────────────────────────────────────────────────────┐
@@ -299,4 +297,3 @@
    ║                                                               ║
    ╚═══════════════════════════════════════════════════════════════╝
 ```
-
