@@ -71,14 +71,20 @@ def get_categories():
     Liste toutes les catégories d'items disponibles avec détails.
     Endpoint: GET /api/wakfu/categories
     """
-    from ..models import ItemCategory
+    from ..models import ItemCategory, Item
     from ..pipeline.wakfu_config import WAKFU_ITEM_CATEGORIES
+    from sqlalchemy import func
 
     try:
-        categories = ItemCategory.query.all()
+        # Récupérer les catégories avec un count des items en une seule requête
+        categories_with_count = db.session.query(
+            ItemCategory,
+            func.count(Item.id).label('item_count')
+        ).outerjoin(Item).group_by(ItemCategory.id).all()
+        
         result = []
         
-        for cat in categories:
+        for cat, item_count in categories_with_count:
             # Récupérer la config pour les labels
             config = WAKFU_ITEM_CATEGORIES.get(cat.name, {})
             
@@ -96,7 +102,7 @@ def get_categories():
                 "label_fr": config.get("label_fr", cat.name),
                 "label_en": config.get("label_en", cat.name),
                 "type_ids": cat.type_ids or [],
-                "item_count": len(cat.items),
+                "item_count": item_count,
             })
 
         # Trier par groupe puis par nom
