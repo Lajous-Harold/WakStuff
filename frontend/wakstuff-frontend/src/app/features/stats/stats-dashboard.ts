@@ -65,6 +65,11 @@ export class StatsDashboard implements OnInit {
       .slice(0, 10);
   }
 
+  formatCategoryName(fullCategory: string): string {
+    const parts = fullCategory.split('.');
+    return parts[parts.length - 1] || fullCategory;
+  }
+
   getRarityClass(rarity: string): string {
     return `rarity-${rarity.toLowerCase()}`;
   }

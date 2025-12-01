@@ -89,7 +89,7 @@
       <div class="category-list">
         @for (item of getCategoryEntries(); track item.category) {
         <div class="category-item" (click)="viewCategory(item.category)">
-          <span class="category-name">{{ item.category }}</span>
+          <span class="category-name">{{ formatCategoryName(item.category) }}</span>
           <div class="category-bar-container">
             <div class="category-bar">
               <div
