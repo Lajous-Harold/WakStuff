@@ -61,15 +61,22 @@ def list_items():
     search_filter = request.args.get("search")
     include_details = request.args.get("details", "false").lower() in ("true", "1", "yes")
     
-    try:
-        level_min = int(request.args.get("level_min", 0))
-    except (ValueError, TypeError):
-        level_min = 0
+    level_min = None
+    level_max = None
     
     try:
-        level_max = int(request.args.get("level_max", 999))
+        level_min_str = request.args.get("level_min")
+        if level_min_str:
+            level_min = int(level_min_str)
     except (ValueError, TypeError):
-        level_max = 999
+        level_min = None
+    
+    try:
+        level_max_str = request.args.get("level_max")
+        if level_max_str:
+            level_max = int(level_max_str)
+    except (ValueError, TypeError):
+        level_max = None
 
     query = Item.query
     
@@ -81,10 +88,10 @@ def list_items():
     if rarity_filter:
         query = query.filter_by(rarity=rarity_filter)
     
-    if level_min > 0:
+    if level_min is not None and level_min > 0:
         query = query.filter(Item.level >= level_min)
     
-    if level_max < 999:
+    if level_max is not None and level_max > 0:
         query = query.filter(Item.level <= level_max)
     
     if search_filter:

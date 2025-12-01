@@ -64,9 +64,9 @@ export class ItemsService {
     if (params.category) httpParams = httpParams.set('category', params.category);
     if (params.rarity) httpParams = httpParams.set('rarity', params.rarity);
     if (params.minLevel !== undefined)
-      httpParams = httpParams.set('min_level', params.minLevel.toString());
+      httpParams = httpParams.set('level_min', params.minLevel.toString());
     if (params.maxLevel !== undefined)
-      httpParams = httpParams.set('max_level', params.maxLevel.toString());
+      httpParams = httpParams.set('level_max', params.maxLevel.toString());
     if (params.search) httpParams = httpParams.set('search', params.search);
     if (params.details) httpParams = httpParams.set('details', 'true');
 
