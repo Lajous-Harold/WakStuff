@@ -29,6 +29,15 @@ class WakfuClient:
 
         self.timeout = timeout
         self.session = session or requests.Session()
+        
+        # Headers pour éviter les 403 Forbidden du CDN Ankama
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Referer': 'https://www.wakfu.com/',
+            'Origin': 'https://www.wakfu.com'
+        })
 
     @property
     def config_url(self) -> str:
@@ -96,3 +105,63 @@ class WakfuClient:
                 yield item
             else:
                 logger.warning("Item non dict ignoré: %r", item)
+
+    def _fetch_resource(
+        self, resource_name: str, version: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Méthode générique pour récupérer n'importe quelle ressource JSON de l'API Wakfu.
+        Ex: actions.json, states.json, jobs.json, itemTypes.json, recipeCategories.json, etc.
+        """
+        game_version = version or self.get_current_version()
+        resource_url = f"{self.base_url}/{game_version}/{resource_name}"
+
+        data = self._get_json(resource_url)
+
+        if isinstance(data, list):
+            return data
+
+        if isinstance(data, dict):
+            # Certains fichiers ont un wrapper
+            for key in ["items", "data", "definitions", resource_name.replace(".json", "")]:
+                maybe_data = data.get(key)
+                if isinstance(maybe_data, list):
+                    return maybe_data
+
+        raise ValueError(
+            f"Format inattendu pour {resource_name} (ni liste ni dict exploitable)."
+        )
+
+    def fetch_all_actions(self, version: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Récupère actions.json pour décoder les effets."""
+        return self._fetch_resource("actions.json", version)
+
+    def fetch_all_states(self, version: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Récupère states.json pour les états/buffs/debuffs."""
+        return self._fetch_resource("states.json", version)
+
+    def fetch_all_jobs(self, version: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Récupère jobs.json pour les métiers."""
+        return self._fetch_resource("jobs.json", version)
+
+    def fetch_all_item_types(self, version: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Récupère itemTypes.json pour la classification des items."""
+        return self._fetch_resource("itemTypes.json", version)
+
+    def fetch_all_recipe_categories(
+        self, version: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Récupère recipeCategories.json pour les recettes de craft."""
+        return self._fetch_resource("recipeCategories.json", version)
+
+    def fetch_all_recipes(self, version: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Récupère recipes.json pour les recettes de craft."""
+        return self._fetch_resource("recipes.json", version)
+
+    def fetch_all_equipments(self, version: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Récupère equipments.json si disponible."""
+        return self._fetch_resource("equipments.json", version)
+
+    def fetch_all_resources(self, version: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Récupère resources.json si disponible."""
+        return self._fetch_resource("resources.json", version)

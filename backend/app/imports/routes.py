@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, current_app
 
-from ..pipeline.import_items import run_full_import
+from ..pipeline.full_import import run_full_wakfu_import
 from ..models import ImportBatch
 
 imports_bp = Blueprint("imports", __name__)
@@ -37,13 +37,21 @@ def build_icon_url(icon_gfx_id: int | None) -> str | None:
 def run_import():
     """
     Lance un import complet depuis l'API Wakfu via WakStuff.
+    Utilise maintenant le système complet avec classification et parsing d'effets.
     """
-    batch = run_full_import()
-
-    payload = serialize_batch(batch)
-    payload["batch_id"] = batch.id
-
-    return jsonify(payload), 201
+    try:
+        batch = run_full_wakfu_import()
+        
+        payload = serialize_batch(batch)
+        payload["batch_id"] = batch.id
+        
+        return jsonify(payload), 201
+    except Exception as e:
+        current_app.logger.error(f"Erreur lors de l'import: {e}", exc_info=True)
+        return jsonify({
+            "error": str(e),
+            "message": "Erreur lors de l'import des données Wakfu"
+        }), 500
 
 
 @imports_bp.get("/")
