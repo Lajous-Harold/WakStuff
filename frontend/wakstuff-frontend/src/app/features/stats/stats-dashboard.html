@@ -1,0 +1,108 @@
+<section class="stats-page">
+  <header class="page-header">
+    <div class="header-left">
+      <h2 class="page-title">Statistiques</h2>
+      <p class="page-subtitle">Vue d'ensemble des données Wakfu</p>
+    </div>
+    <button class="btn btn-primary" (click)="reload()" [disabled]="loading">
+      {{ loading ? 'Chargement...' : 'Recharger' }}
+    </button>
+  </header>
+
+  @if (loading) {
+  <p class="status status-loading">Chargement des statistiques...</p>
+  } @if (error) {
+  <div class="card error-card">
+    <p class="error-message">{{ error }}</p>
+  </div>
+  } @if (!loading && !error && stats) {
+  <!-- Statistiques globales -->
+  <div class="stats-overview">
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats.items.total }}</span>
+        <span class="stat-label">Items</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🔨</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats.recipes }}</span>
+        <span class="stat-label">Recettes</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats.actions }}</span>
+        <span class="stat-label">Actions</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">✨</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats.states }}</span>
+        <span class="stat-label">États</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🛠️</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats.jobs }}</span>
+        <span class="stat-label">Métiers</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Répartition par rareté -->
+  <div class="card chart-card">
+    <h3 class="section-title">Répartition par rareté</h3>
+    <div class="rarity-list">
+      @for (item of getRarityEntries(); track item.rarity) {
+      <div class="rarity-item" (click)="viewRarity(item.rarity)">
+        <div class="rarity-header">
+          <span class="chip" [class]="getRarityClass(item.rarity)">{{ item.rarity }}</span>
+          <span class="rarity-count">{{ item.count }} items</span>
+        </div>
+        <div class="progress-bar">
+          <div
+            class="progress-fill"
+            [class]="getRarityClass(item.rarity)"
+            [style.width.%]="getRarityPercentage(item.count)"
+          ></div>
+        </div>
+        <span class="rarity-percentage">{{ getRarityPercentage(item.count) }}%</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <!-- Top catégories -->
+    <div class="card chart-card">
+      <h3 class="section-title">Top 10 Catégories</h3>
+      <div class="category-list">
+        @for (item of getCategoryEntries(); track item.category) {
+        <div class="category-item" (click)="viewCategory(item.category)">
+          <span class="category-name">{{ item.category }}</span>
+          <div class="category-bar-container">
+            <div class="category-bar">
+              <div
+                class="category-bar-fill"
+                [style.width.%]="getCategoryPercentage(item.count)"
+              ></div>
+            </div>
+            <span class="category-count">{{ item.count }}</span>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  }
+</section>
