@@ -1,9 +1,15 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
-import { ItemsService, WakstuffItem } from '../../../core/services/items.service';
+import {
+  ItemsService,
+  WakstuffItem,
+  ItemsListResponse,
+  CategoryStats,
+} from '../../../core/services/items.service';
+import { WakfuDataService, CategoryInfo } from '../../../core/services/wakfu-data.service';
 
 @Component({
   selector: 'app-items-list',
@@ -14,88 +20,103 @@ import { ItemsService, WakstuffItem } from '../../../core/services/items.service
 })
 export class ItemsList implements OnInit {
   items: WakstuffItem[] = [];
-  filteredItems: WakstuffItem[] = [];
-  pagedItems: WakstuffItem[] = [];
-
+  total = 0;
   loading = false;
   reloading = false;
   error: string | null = null;
-  searchQuery = '';
 
-  pageIndex = 0; // 0-based
+  // Filtres
+  searchQuery = '';
+  selectedCategory = '';
+  selectedRarity = '';
+  minLevel: number | null = null;
+  maxLevel: number | null = null;
+  showDetails = false;
+
+  // Pagination
+  pageIndex = 0;
   pageSize = 25;
   pageSizeOptions = [25, 50, 100];
 
-  get totalItems(): number {
-    return this.filteredItems.length;
-  }
+  // Données pour les filtres
+  categories: CategoryInfo[] = [];
+  rarities = ['Common', 'Rare', 'Mythical', 'Legendary', 'Relic', 'Souvenir', 'Epic', 'Unusual'];
 
   get totalPages(): number {
     if (this.pageSize <= 0) return 1;
-    const pages = Math.ceil(this.totalItems / this.pageSize);
+    const pages = Math.ceil(this.total / this.pageSize);
     return pages > 0 ? pages : 1;
   }
 
   get pageStartIndex(): number {
-    if (this.totalItems === 0) return 0;
+    if (this.total === 0) return 0;
     return this.pageIndex * this.pageSize + 1;
   }
 
   get pageEndIndex(): number {
-    return Math.min(this.totalItems, (this.pageIndex + 1) * this.pageSize);
+    return Math.min(this.total, (this.pageIndex + 1) * this.pageSize);
   }
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private itemsService: ItemsService,
+    private wakfuDataService: WakfuDataService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.loading = true;
+    this.loadCategories();
+    this.loadItems();
+  }
 
-    this.route.data.subscribe({
-      next: (data) => {
-        const resolved = data['items'];
-        this.items = this.toArray(resolved);
-        this.filteredItems = [...this.items];
-        this.pageIndex = 0;
-        this.updatePagedItems();
-        this.loading = false;
-        this.error = null;
+  private loadCategories(): void {
+    this.wakfuDataService.getCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories.sort((a, b) => a.name.localeCompare(b.name));
       },
       error: (err) => {
-        this.error = err?.message ?? 'Erreur lors du chargement des items';
-        this.items = [];
-        this.filteredItems = [];
-        this.pagedItems = [];
-        this.loading = false;
+        console.error('Erreur lors du chargement des catégories:', err);
       },
     });
   }
 
-  /**
-   * Force n'importe quelle valeur à être un WakstuffItem[].
-   * - si c'est déjà un tableau => on le garde
-   * - si c'est un objet avec une propriété .items tableau => on prend ça
-   * - sinon => []
-   */
-  private toArray(value: any): WakstuffItem[] {
-    if (Array.isArray(value)) {
-      return value as WakstuffItem[];
-    }
+  private loadItems(): void {
+    this.loading = true;
+    this.error = null;
 
-    if (value && typeof value === 'object' && Array.isArray(value.items)) {
-      return value.items as WakstuffItem[];
-    }
+    const params = {
+      limit: this.pageSize,
+      offset: this.pageIndex * this.pageSize,
+      category: this.selectedCategory || undefined,
+      rarity: this.selectedRarity || undefined,
+      minLevel: this.minLevel ?? undefined,
+      maxLevel: this.maxLevel ?? undefined,
+      search: this.searchQuery || undefined,
+      details: this.showDetails,
+    };
 
-    return [];
-  }
-
-  private updatePagedItems(): void {
-    const start = this.pageIndex * this.pageSize;
-    const end = start + this.pageSize;
-    this.pagedItems = this.filteredItems.slice(start, end);
+    this.itemsService
+      .list(params)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (response: ItemsListResponse) => {
+          this.items = response.items;
+          this.total = response.total;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.error = err?.message ?? 'Erreur lors du chargement des items';
+          this.items = [];
+          this.total = 0;
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   changePageSize(rawValue: string | number): void {
@@ -107,29 +128,41 @@ export class ItemsList implements OnInit {
 
     this.pageSize = size;
     this.pageIndex = 0;
-    this.updatePagedItems();
+    this.loadItems();
   }
 
   onSearchChange(): void {
-    const query = this.searchQuery.toLowerCase().trim();
-
-    if (!query) {
-      this.filteredItems = [...this.items];
-    } else {
-      this.filteredItems = this.items.filter((item) => {
-        return (
-          item.name.toLowerCase().includes(query) ||
-          item.type?.toLowerCase().includes(query) ||
-          item.rarity?.toLowerCase().includes(query) ||
-          item.element?.toLowerCase().includes(query) ||
-          item.id.toString().includes(query) ||
-          item.wakfu_id.toString().includes(query)
-        );
-      });
-    }
-
     this.pageIndex = 0;
-    this.updatePagedItems();
+    this.loadItems();
+  }
+
+  onCategoryChange(): void {
+    this.pageIndex = 0;
+    this.loadItems();
+  }
+
+  onRarityChange(): void {
+    this.pageIndex = 0;
+    this.loadItems();
+  }
+
+  onLevelChange(): void {
+    this.pageIndex = 0;
+    this.loadItems();
+  }
+
+  onDetailsToggle(): void {
+    this.loadItems();
+  }
+
+  clearFilters(): void {
+    this.searchQuery = '';
+    this.selectedCategory = '';
+    this.selectedRarity = '';
+    this.minLevel = null;
+    this.maxLevel = null;
+    this.pageIndex = 0;
+    this.loadItems();
   }
 
   canGoPrevious(): boolean {
@@ -137,64 +170,57 @@ export class ItemsList implements OnInit {
   }
 
   canGoNext(): boolean {
-    return (this.pageIndex + 1) * this.pageSize < this.totalItems;
+    return (this.pageIndex + 1) * this.pageSize < this.total;
   }
 
   goToFirstPage(): void {
     if (!this.canGoPrevious()) return;
     this.pageIndex = 0;
-    this.updatePagedItems();
+    this.loadItems();
   }
 
   goToLastPage(): void {
     if (!this.canGoNext()) return;
     this.pageIndex = this.totalPages - 1;
-    this.updatePagedItems();
+    this.loadItems();
   }
 
   goToPreviousPage(): void {
     if (!this.canGoPrevious()) return;
     this.pageIndex--;
-    this.updatePagedItems();
+    this.loadItems();
   }
 
   goToNextPage(): void {
     if (!this.canGoNext()) return;
     this.pageIndex++;
-    this.updatePagedItems();
+    this.loadItems();
   }
 
   reload(): void {
     this.reloading = true;
-    this.error = null;
-    this.cdr.detectChanges();
-
-    this.itemsService
-      .list()
-      .pipe(
-        finalize(() => {
-          this.reloading = false;
-          this.cdr.detectChanges();
-        })
-      )
-      .subscribe({
-        next: (items) => {
-          this.items = this.toArray(items as any);
-          this.searchQuery = '';
-          this.filteredItems = [...this.items];
-          this.pageIndex = 0;
-          this.updatePagedItems();
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          this.error = err?.message ?? 'Erreur lors du rechargement des items';
-          this.cdr.detectChanges();
-        },
-      });
+    this.pageIndex = 0;
+    this.loadItems();
+    this.reloading = false;
   }
 
   onImageError(event: Event, item: WakstuffItem): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
+  }
+
+  getRarityClass(rarity: string | null): string {
+    if (!rarity) return 'rarity-common';
+    return `rarity-${rarity.toLowerCase()}`;
+  }
+
+  getCategoryBadge(category: string | null): string {
+    if (!category) return 'N/A';
+    const parts = category.split('.');
+    return parts[parts.length - 1] || category;
+  }
+
+  viewItemDetails(item: WakstuffItem): void {
+    this.router.navigate(['/items', item.id]);
   }
 }

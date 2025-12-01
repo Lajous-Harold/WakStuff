@@ -3,40 +3,120 @@
     <h2 class="page-title">Items WakStuff</h2>
 
     <div class="header-actions">
-      <div class="search-box">
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Rechercher par nom, type, rareté..."
-          [(ngModel)]="searchQuery"
-          (input)="onSearchChange()"
-        />
-        @if (searchQuery) {
-        <button class="clear-search" (click)="searchQuery = ''; onSearchChange()">✕</button>
-        }
-      </div>
-
       <button class="btn btn-primary" (click)="reload()" [disabled]="reloading">
         {{ reloading ? 'Chargement...' : 'Recharger' }}
       </button>
     </div>
   </header>
 
+  <!-- Filtres -->
+  <div class="card filters-card">
+    <h3 class="filters-title">Filtres</h3>
+
+    <div class="filters-grid">
+      <!-- Recherche -->
+      <div class="filter-group">
+        <label for="search">Recherche</label>
+        <div class="search-box">
+          <input
+            id="search"
+            type="text"
+            class="search-input"
+            placeholder="Nom, type..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange()"
+          />
+          @if (searchQuery) {
+          <button class="clear-search" (click)="searchQuery = ''; onSearchChange()">✕</button>
+          }
+        </div>
+      </div>
+
+      <!-- Catégorie -->
+      <div class="filter-group">
+        <label for="category">Catégorie</label>
+        <select
+          id="category"
+          class="select"
+          [(ngModel)]="selectedCategory"
+          (change)="onCategoryChange()"
+        >
+          <option value="">Toutes les catégories</option>
+          @for (cat of categories; track cat.id) {
+          <option [value]="cat.name">{{ cat.name }} ({{ cat.item_count }})</option>
+          }
+        </select>
+      </div>
+
+      <!-- Rareté -->
+      <div class="filter-group">
+        <label for="rarity">Rareté</label>
+        <select id="rarity" class="select" [(ngModel)]="selectedRarity" (change)="onRarityChange()">
+          <option value="">Toutes les raretés</option>
+          @for (rarity of rarities; track rarity) {
+          <option [value]="rarity">{{ rarity }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Niveau min -->
+      <div class="filter-group">
+        <label for="minLevel">Niveau min</label>
+        <input
+          id="minLevel"
+          type="number"
+          class="input"
+          min="1"
+          max="230"
+          placeholder="Min"
+          [(ngModel)]="minLevel"
+          (change)="onLevelChange()"
+        />
+      </div>
+
+      <!-- Niveau max -->
+      <div class="filter-group">
+        <label for="maxLevel">Niveau max</label>
+        <input
+          id="maxLevel"
+          type="number"
+          class="input"
+          min="1"
+          max="230"
+          placeholder="Max"
+          [(ngModel)]="maxLevel"
+          (change)="onLevelChange()"
+        />
+      </div>
+
+      <!-- Afficher détails -->
+      <div class="filter-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="showDetails" (change)="onDetailsToggle()" />
+          Afficher effets parsés
+        </label>
+      </div>
+    </div>
+
+    <div class="filters-actions">
+      <button class="btn btn-secondary" (click)="clearFilters()">Effacer les filtres</button>
+    </div>
+  </div>
+
   @if (loading) {
   <p class="status status-loading">Chargement des items...</p>
   } @if (error) {
   <p class="status status-error">{{ error }}</p>
-  } @if (!loading && !error && totalItems === 0 && searchQuery) {
+  } @if (!loading && !error && total === 0 && (searchQuery || selectedCategory || selectedRarity)) {
   <section class="card">
-    <p class="status status-empty">
-      Aucun item ne correspond à votre recherche "{{ searchQuery }}".
-    </p>
+    <p class="status status-empty">Aucun item ne correspond à vos critères de recherche.</p>
   </section>
-  } @if (!loading && !error && totalItems === 0 && !searchQuery) {
+  } @if (!loading && !error && total === 0 && !searchQuery && !selectedCategory && !selectedRarity)
+  {
   <section class="card">
     <p class="status status-empty">Aucun item pour le moment.</p>
   </section>
-  } @if (!loading && !error && totalItems > 0) {
+  } @if (!loading && !error && total > 0) {
   <!-- Paginator -->
   <div class="paginator card">
     <div class="paginator-info">
@@ -45,7 +125,7 @@
       –
       <strong>{{ pageEndIndex }}</strong>
       sur
-      <strong>{{ totalItems }}</strong>
+      <strong>{{ total }}</strong>
       items
     </div>
 
@@ -108,8 +188,8 @@
 
   <div class="card items-card">
     <ul class="items-list">
-      @for (item of pagedItems; track item.id) {
-      <li class="item-row">
+      @for (item of items; track item.id) {
+      <li class="item-row" (click)="viewItemDetails(item)">
         <div class="item-main">
           @if (item.icon_url) {
           <img
@@ -120,18 +200,37 @@
             (error)="onImageError($event, item)"
           />
           }
-          <span class="item-name"> #{{ item.id }} – {{ item.name }} </span>
-          <span class="item-level"> Niveau {{ item.level ?? '?' }} </span>
+          <div class="item-info">
+            <span class="item-name">{{ item.name }}</span>
+            <span class="item-id">#{{ item.id }} (Wakfu ID: {{ item.wakfu_id }})</span>
+          </div>
+          <span class="item-level">Niv. {{ item.level ?? '?' }}</span>
         </div>
 
         <div class="item-meta">
-          <span class="chip"> Rareté : {{ item.rarity || 'n/a' }} </span>
-          <span class="chip"> Type : {{ item.type || 'n/a' }} </span>
-
-          @if (item.needs_review) {
+          @if (item.category) {
+          <span class="chip chip-category">{{ getCategoryBadge(item.category) }}</span>
+          }
+          <span class="chip" [class]="getRarityClass(item.rarity)">
+            {{ item.rarity || 'N/A' }}
+          </span>
+          @if (item.type) {
+          <span class="chip">{{ item.type }}</span>
+          } @if (item.needs_review) {
           <span class="chip chip-warn">À revoir</span>
           }
         </div>
+
+        @if (showDetails && item.parsed_effects && item.parsed_effects.length > 0) {
+        <div class="item-effects">
+          <strong>Effets:</strong>
+          <ul>
+            @for (effect of item.parsed_effects; track $index) {
+            <li>{{ effect }}</li>
+            }
+          </ul>
+        </div>
+        }
       </li>
       }
     </ul>
