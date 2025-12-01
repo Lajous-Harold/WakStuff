@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   HarvestResourcesService,
@@ -14,13 +14,13 @@ import { environment } from '../../../core/config';
   styleUrl: './harvest-resources.scss',
 })
 export class HarvestResourcesComponent implements OnInit {
-  private harvestService = inject(HarvestResourcesService);
-
   resources: HarvestResource[] = [];
   groupedResources: Array<{ key: string; value: HarvestResource[] }> = [];
   loading = true;
   error: string | null = null;
   totalResources = 0;
+
+  constructor(private harvestService: HarvestResourcesService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadResources();
@@ -31,6 +31,7 @@ export class HarvestResourcesComponent implements OnInit {
         console.error('Loading timeout - forcing error state');
         this.loading = false;
         this.error = 'Timeout lors du chargement des ressources';
+        this.cdr.detectChanges();
       }
     }, 10000);
   }
@@ -38,6 +39,7 @@ export class HarvestResourcesComponent implements OnInit {
   loadResources() {
     this.loading = true;
     this.error = null;
+    this.cdr.detectChanges();
 
     this.harvestService.getHarvestResources().subscribe({
       next: (response) => {
@@ -45,11 +47,13 @@ export class HarvestResourcesComponent implements OnInit {
         this.totalResources = response.total;
         this.groupResourcesByRarity();
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading harvest resources:', err);
         this.error = 'Erreur lors du chargement des ressources de récolte';
         this.loading = false;
+        this.cdr.detectChanges();
       },
     });
   }
