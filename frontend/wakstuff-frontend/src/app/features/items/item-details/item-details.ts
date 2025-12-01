@@ -4,11 +4,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { ItemsService, WakstuffItem } from '../../../core/services/items.service';
 import { WakfuDataService, Recipe } from '../../../core/services/wakfu-data.service';
+import { CategoryLabelPipe, RarityLabelPipe } from '../../../shared/pipes';
 
 @Component({
   selector: 'app-item-details',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CategoryLabelPipe, RarityLabelPipe],
   templateUrl: './item-details.html',
   styleUrls: ['./item-details.scss'],
 })

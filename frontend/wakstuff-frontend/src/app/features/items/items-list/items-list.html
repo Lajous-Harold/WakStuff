@@ -43,7 +43,9 @@
         >
           <option value="">Toutes les catégories</option>
           @for (cat of categories; track cat.id) {
-          <option [value]="cat.name">{{ cat.name }} ({{ cat.item_count }})</option>
+          <option [value]="cat.name">
+            {{ cat.name | categoryLabel : 'fr' }} ({{ cat.item_count }})
+          </option>
           }
         </select>
       </div>
@@ -54,7 +56,7 @@
         <select id="rarity" class="select" [(ngModel)]="selectedRarity" (change)="onRarityChange()">
           <option value="">Toutes les raretés</option>
           @for (rarity of rarities; track rarity) {
-          <option [value]="rarity">{{ rarity }}</option>
+          <option [value]="rarity">{{ rarity | rarityLabel : 'fr' }}</option>
           }
         </select>
       </div>
@@ -209,13 +211,11 @@
 
         <div class="item-meta">
           @if (item.category) {
-          <span class="chip chip-category">{{ getCategoryBadge(item.category) }}</span>
-          }
+          <span class="chip chip-category">{{ item.category | categoryLabel : 'fr' }}</span>
+          } @if (item.rarity) {
           <span class="chip" [class]="getRarityClass(item.rarity)">
-            {{ item.rarity || 'N/A' }}
+            {{ item.rarity | rarityLabel : 'fr' }}
           </span>
-          @if (item.type) {
-          <span class="chip">{{ item.type }}</span>
           } @if (item.needs_review) {
           <span class="chip chip-warn">À revoir</span>
           }

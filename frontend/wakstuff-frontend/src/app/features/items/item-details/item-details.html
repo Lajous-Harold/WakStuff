@@ -42,7 +42,7 @@
           <span class="stat-label">Rareté:</span>
           <span class="stat-value">
             <span class="chip" [class]="getRarityClass(item.rarity)">
-              {{ item.rarity || 'N/A' }}
+              {{ item.rarity || 'common' | rarityLabel : 'fr' }}
             </span>
           </span>
         </div>
@@ -50,13 +50,8 @@
         <div class="stat-row">
           <span class="stat-label">Catégorie:</span>
           <span class="stat-value">
-            <span class="chip chip-category">{{ getCategoryBadge(item.category) }}</span>
+            <span class="chip chip-category">{{ item.category | categoryLabel : 'fr' }}</span>
           </span>
-        </div>
-        } @if (item.type) {
-        <div class="stat-row">
-          <span class="stat-label">Type:</span>
-          <span class="stat-value">{{ item.type }}</span>
         </div>
         } @if (item.element) {
         <div class="stat-row">

@@ -10,11 +10,12 @@ import {
   CategoryStats,
 } from '../../../core/services/items.service';
 import { WakfuDataService, CategoryInfo } from '../../../core/services/wakfu-data.service';
+import { CategoryLabelPipe, RarityLabelPipe } from '../../../shared/pipes';
 
 @Component({
   selector: 'app-items-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CategoryLabelPipe, RarityLabelPipe],
   templateUrl: './items-list.html',
   styleUrls: ['./items-list.scss'],
 })
@@ -40,7 +41,7 @@ export class ItemsList implements OnInit {
 
   // Données pour les filtres
   categories: CategoryInfo[] = [];
-  rarities = ['Common', 'Rare', 'Mythical', 'Legendary', 'Relic', 'Souvenir', 'Epic', 'Unusual'];
+  rarities = ['common', 'unusual', 'rare', 'mythical', 'legendary', 'relic', 'souvenir', 'epic'];
 
   get totalPages(): number {
     if (this.pageSize <= 0) return 1;
