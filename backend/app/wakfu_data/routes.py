@@ -68,22 +68,39 @@ def get_stats():
 @bp.route("/categories", methods=["GET"])
 def get_categories():
     """
-    Liste toutes les catégories d'items disponibles.
+    Liste toutes les catégories d'items disponibles avec détails.
     Endpoint: GET /api/wakfu/categories
     """
     from ..models import ItemCategory
+    from ..pipeline.wakfu_config import WAKFU_ITEM_CATEGORIES
 
     try:
         categories = ItemCategory.query.all()
-        result = [
-            {
+        result = []
+        
+        for cat in categories:
+            # Récupérer la config pour les labels
+            config = WAKFU_ITEM_CATEGORIES.get(cat.name, {})
+            
+            # Extraire le groupe et le nom court
+            parts = cat.name.split(".")
+            group = parts[0] if len(parts) > 1 else "other"
+            short_name = parts[-1]
+            
+            result.append({
                 "id": cat.id,
                 "name": cat.name,
+                "short_name": short_name,
+                "group": group,
                 "description": cat.description,
+                "label_fr": config.get("label_fr", cat.name),
+                "label_en": config.get("label_en", cat.name),
+                "type_ids": cat.type_ids or [],
                 "item_count": len(cat.items),
-            }
-            for cat in categories
-        ]
+            })
+
+        # Trier par groupe puis par nom
+        result.sort(key=lambda x: (x["group"], x["name"]))
 
         return jsonify(result), 200
 
@@ -135,6 +152,52 @@ def calculate_craft_resources(item_id):
 
     except Exception as e:
         logger.error(f"Erreur craft calculator: {e!r}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/categories/grouped", methods=["GET"])
+def get_categories_grouped():
+    """
+    Liste les catégories groupées par type (equipments, resources, consumables, etc.).
+    Endpoint: GET /api/wakfu/categories/grouped
+    """
+    from ..models import ItemCategory
+    from ..pipeline.wakfu_config import WAKFU_ITEM_CATEGORIES
+    from collections import defaultdict
+
+    try:
+        categories = ItemCategory.query.all()
+        grouped = defaultdict(list)
+        
+        for cat in categories:
+            config = WAKFU_ITEM_CATEGORIES.get(cat.name, {})
+            parts = cat.name.split(".")
+            group = parts[0] if len(parts) > 1 else "other"
+            
+            grouped[group].append({
+                "id": cat.id,
+                "name": cat.name,
+                "label_fr": config.get("label_fr", cat.name),
+                "label_en": config.get("label_en", cat.name),
+                "item_count": len(cat.items),
+            })
+        
+        # Convertir en liste et trier
+        result = []
+        for group_name, cats in grouped.items():
+            cats.sort(key=lambda x: x["name"])
+            result.append({
+                "group": group_name,
+                "categories": cats,
+                "total_items": sum(c["item_count"] for c in cats)
+            })
+        
+        result.sort(key=lambda x: x["group"])
+        
+        return jsonify(result), 200
+
+    except Exception as e:
+        logger.error(f"Erreur categories grouped: {e!r}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 
