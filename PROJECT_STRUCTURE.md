@@ -2,13 +2,13 @@
 
 ## Vue d'ensemble
 
-```
+```plaintext
 WakStuff/
 │
 ├── README.md                          # Documentation principale complète
 ├── TODO.md                            # Roadmap et tâches
 ├── PROJECT_STRUCTURE.md               # Ce fichier
-├── VISUAL_SUMMARY.txt                 # Diagramme ASCII de l'architecture
+├── VISUAL_SUMMARY.md                  # Diagramme ASCII de l'architecture
 │
 ├── backend/
 │   ├── wsgi.py                       # Point d'entrée Flask

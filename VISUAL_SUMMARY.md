@@ -1,4 +1,8 @@
+# WakStuff - Visual Summary
 
+## 📊 Architecture Overview
+
+```
    ╔═══════════════════════════════════════════════════════════════╗
    ║                                                               ║
    ║       🎮  WAKSTUFF - SYSTÈME D'IMPORT COMPLET WAKFU  🎮      ║
@@ -294,4 +298,5 @@
    ║         Prochaine étape: python test_wakfu_import.py          ║
    ║                                                               ║
    ╚═══════════════════════════════════════════════════════════════╝
+```
 
