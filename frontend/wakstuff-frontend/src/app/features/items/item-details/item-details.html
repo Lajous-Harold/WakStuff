@@ -1,0 +1,126 @@
+<section class="item-details-page">
+  @if (loading) {
+  <p class="status status-loading">Chargement...</p>
+  } @if (error) {
+  <div class="card error-card">
+    <p class="error-message">{{ error }}</p>
+    <button class="btn btn-secondary" (click)="goBack()">Retour à la liste</button>
+  </div>
+  } @if (!loading && !error && item) {
+  <header class="page-header">
+    <button class="btn btn-ghost btn-back" (click)="goBack()">← Retour</button>
+    <h2 class="page-title">{{ item.name }}</h2>
+  </header>
+
+  <div class="details-grid">
+    <!-- Carte principale -->
+    <div class="card main-card">
+      <div class="item-header">
+        @if (item.icon_url) {
+        <img
+          [src]="item.icon_url"
+          [alt]="item.name"
+          class="item-icon-large"
+          (error)="onImageError($event)"
+        />
+        }
+        <div class="item-header-info">
+          <h3 class="item-name">{{ item.name }}</h3>
+          <div class="item-ids">
+            <span class="id-badge">ID: {{ item.id }}</span>
+            <span class="id-badge">Wakfu ID: {{ item.wakfu_id }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item-stats">
+        <div class="stat-row">
+          <span class="stat-label">Niveau:</span>
+          <span class="stat-value">{{ item.level || 'N/A' }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Rareté:</span>
+          <span class="stat-value">
+            <span class="chip" [class]="getRarityClass(item.rarity)">
+              {{ item.rarity || 'N/A' }}
+            </span>
+          </span>
+        </div>
+        @if (item.category) {
+        <div class="stat-row">
+          <span class="stat-label">Catégorie:</span>
+          <span class="stat-value">
+            <span class="chip chip-category">{{ getCategoryBadge(item.category) }}</span>
+          </span>
+        </div>
+        } @if (item.type) {
+        <div class="stat-row">
+          <span class="stat-label">Type:</span>
+          <span class="stat-value">{{ item.type }}</span>
+        </div>
+        } @if (item.element) {
+        <div class="stat-row">
+          <span class="stat-label">Élément:</span>
+          <span class="stat-value">{{ item.element }}</span>
+        </div>
+        } @if (item.needs_review) {
+        <div class="stat-row">
+          <span class="chip chip-warn">⚠️ À revoir</span>
+        </div>
+        }
+      </div>
+
+      @if (item.parsed_effects && item.parsed_effects.length > 0) {
+      <div class="effects-section">
+        <h4 class="section-title">Effets</h4>
+        <ul class="effects-list">
+          @for (effect of item.parsed_effects; track $index) {
+          <li class="effect-item">{{ effect }}</li>
+          }
+        </ul>
+      </div>
+      }
+    </div>
+
+    <!-- Carte recette -->
+    <div class="card recipe-card">
+      <h4 class="section-title">Recette de craft</h4>
+
+      @if (loadingRecipe) {
+      <p class="status status-loading">Chargement de la recette...</p>
+      } @else if (recipe) {
+      <div class="recipe-info">
+        <div class="recipe-header">
+          <div class="stat-row">
+            <span class="stat-label">Niveau requis:</span>
+            <span class="stat-value">{{ recipe.level }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">XP:</span>
+            <span class="stat-value">{{ recipe.xp }}</span>
+          </div>
+        </div>
+
+        <div class="ingredients-section">
+          <h5 class="subsection-title">Ingrédients</h5>
+          <ul class="ingredients-list">
+            @for (ingredient of recipe.ingredients; track ingredient.item_id) {
+            <li class="ingredient-item">
+              <span class="ingredient-name">{{ ingredient.item_name }}</span>
+              <span class="ingredient-quantity">× {{ ingredient.quantity }}</span>
+            </li>
+            }
+          </ul>
+        </div>
+
+        <button class="btn btn-primary btn-calculator" (click)="viewCraftCalculator()">
+          🔨 Ouvrir le calculateur
+        </button>
+      </div>
+      } @else {
+      <p class="status status-empty">Cet item n'a pas de recette de craft.</p>
+      }
+    </div>
+  </div>
+  }
+</section>
