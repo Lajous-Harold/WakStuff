@@ -12,7 +12,11 @@ WakStuff est un système d'import, classification et analyse des données du MMO
 
 - **Import complet automatisé** : Actions, States, Jobs, ItemTypes, Items, Recipes
 - **Parser d'effets intelligent** : Décodage des templates Wakfu (ex: `{[>2]?s:}`, `[#1]`, `[~3]`)
-- **Classification automatique** : 35+ catégories (armes, équipements, ressources, consommables)
+- **Classification automatique** : 45 catégories basées sur les typeIds réels de l'API Wakfu
+  - 16 catégories d'équipements (armes 1H/2H, armures, accessoires, pets, montures...)
+  - 11 catégories de ressources (minerais, plantes, bois, poissons, crafting...)
+  - 3 catégories de consommables (nourriture, potions, buffs)
+  - 15 catégories diverses (quêtes, sacs, sublimations, recettes, reliques...)
 - **Calculateur de craft récursif** : Calcule toutes les ressources nécessaires à la fabrication
 - **API REST complète** : Statistiques, recherche, filtrage par catégorie
 - **Support multilingue** : FR/EN/ES/PT pour les descriptions d'effets
@@ -46,7 +50,7 @@ WakStuff est un système d'import, classification et analyse des données du MMO
 - Python 3.13 + Flask + SQLAlchemy
 - PostgreSQL 16
 - Parser d'effets (regex-based, multilingue)
-- Classificateur intelligent (35+ catégories)
+- Classificateur intelligent (45 catégories basées sur l'API Wakfu v1.90.1.47)
 - Calculateur de craft récursif
 - Proxy d'images pour CDN Ankama
 
