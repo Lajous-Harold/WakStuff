@@ -62,3 +62,79 @@ def list_imports():
     batches = ImportBatch.query.order_by(ImportBatch.started_at.desc()).limit(20).all()
 
     return jsonify([serialize_batch(b) for b in batches]), 200
+
+
+@imports_bp.delete("/")
+def delete_all_imports():
+    """
+    Supprime toutes les données de la base mais conserve la structure des tables.
+    Cela inclut :
+    - Import batches
+    - Items bruts (item_raw)
+    - Items parsés
+    - Catégories d'items
+    - Recettes
+    - Actions
+    - États
+    - Métiers
+    - Ressources de récolte
+    """
+    try:
+        from ..database import db
+        from ..models import (
+            Item, ItemRaw, ItemCategory, Recipe, 
+            Action, State, Job, HarvestResource
+        )
+        
+        # Compter avant suppression
+        import_count = ImportBatch.query.count()
+        item_count = Item.query.count()
+        recipe_count = Recipe.query.count()
+        action_count = Action.query.count()
+        state_count = State.query.count()
+        job_count = Job.query.count()
+        
+        # Supprimer toutes les données dans l'ordre (respecter les FK)
+        HarvestResource.query.delete()
+        Recipe.query.delete()
+        Item.query.delete()
+        ItemRaw.query.delete()  # Dépend de ImportBatch
+        ItemCategory.query.delete()
+        Action.query.delete()
+        State.query.delete()
+        Job.query.delete()
+        ImportBatch.query.delete()
+        
+        db.session.commit()
+        
+        message = (
+            f"Base de données nettoyée : "
+            f"{import_count} import(s), "
+            f"{item_count} item(s), "
+            f"{recipe_count} recette(s), "
+            f"{action_count} action(s), "
+            f"{state_count} état(s), "
+            f"{job_count} métier(s) supprimé(s)"
+        )
+        
+        current_app.logger.info(message)
+        
+        return jsonify({
+            "message": message,
+            "deleted": {
+                "imports": import_count,
+                "items": item_count,
+                "recipes": recipe_count,
+                "actions": action_count,
+                "states": state_count,
+                "jobs": job_count
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erreur lors du nettoyage de la base: {e}", exc_info=True)
+        return jsonify({
+            "error": str(e),
+            "message": "Erreur lors du nettoyage de la base de données"
+        }), 500

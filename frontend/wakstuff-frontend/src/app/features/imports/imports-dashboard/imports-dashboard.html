@@ -10,6 +10,15 @@
       <button class="btn btn-ghost" (click)="loadBatches()" [disabled]="reloading">
         {{ reloading ? 'Chargement...' : 'Recharger' }}
       </button>
+
+      <button
+        class="btn btn-danger"
+        (click)="confirmDeleteAll()"
+        [disabled]="loading || batches.length === 0"
+        title="Supprimer tous les imports et toutes les données"
+      >
+        Supprimer tout
+      </button>
     </div>
   </header>
 

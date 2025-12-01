@@ -61,6 +61,16 @@
   }
 }
 
+.btn-danger {
+  background: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.25);
+
+  &:hover:not(:disabled) {
+    background: #b91c1c;
+  }
+}
+
 /* Card / bloc */
 
 .card {

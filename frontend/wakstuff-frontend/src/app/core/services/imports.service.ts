@@ -36,4 +36,28 @@ export class ImportsService {
   list(): Observable<ImportBatchDto[]> {
     return this.http.get<ImportBatchDto[]>(`${this.baseUrl}/`);
   }
+
+  deleteAll(): Observable<{
+    message: string;
+    deleted: {
+      imports: number;
+      items: number;
+      recipes: number;
+      actions: number;
+      states: number;
+      jobs: number;
+    };
+  }> {
+    return this.http.delete<{
+      message: string;
+      deleted: {
+        imports: number;
+        items: number;
+        recipes: number;
+        actions: number;
+        states: number;
+        jobs: number;
+      };
+    }>(`${this.baseUrl}/`);
+  }
 }

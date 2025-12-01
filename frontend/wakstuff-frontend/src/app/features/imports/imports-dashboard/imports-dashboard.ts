@@ -45,7 +45,7 @@ export class ImportsDashboard implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private importsService: ImportsService,
-    private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -87,7 +87,7 @@ export class ImportsDashboard implements OnInit {
           this.reloading = false;
           this.loading = false;
           this.cdr.detectChanges();
-        }),
+        })
       )
       .subscribe({
         next: (batches) => {
@@ -153,6 +153,38 @@ export class ImportsDashboard implements OnInit {
       error: (err) => {
         this.lastRunMessage = `Erreur: ${err?.message ?? err}`;
         this.loading = false;
+      },
+    });
+  }
+
+  confirmDeleteAll(): void {
+    const confirmed = confirm(
+      `⚠️ ATTENTION ⚠️\n\nCette action va supprimer :\n- Tous les ${this.batches.length} import(s)\n- Tous les items\n- Toutes les recettes\n- Toutes les catégories\n- Toutes les actions, états et métiers\n\nCette action est IRRÉVERSIBLE.\n\nContinuer ?`
+    );
+
+    if (confirmed) {
+      this.deleteAll();
+    }
+  }
+
+  deleteAll(): void {
+    this.loading = true;
+    this.error = null;
+    this.lastRunMessage = null;
+
+    this.importsService.deleteAll().subscribe({
+      next: (res) => {
+        this.lastRunMessage = `✅ ${res.message} | Imports: ${res.deleted.imports}, Items: ${res.deleted.items}, Recettes: ${res.deleted.recipes}, Actions: ${res.deleted.actions}, États: ${res.deleted.states}, Métiers: ${res.deleted.jobs}`;
+        this.batches = [];
+        this.pagedBatches = [];
+        this.pageIndex = 0;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.error = err?.message ?? 'Erreur lors de la suppression des imports';
+        this.loading = false;
+        this.cdr.detectChanges();
       },
     });
   }
