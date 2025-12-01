@@ -201,6 +201,50 @@ def get_categories_grouped():
         return jsonify({"error": str(e)}), 500
 
 
+@bp.route("/harvest-resources", methods=["GET"])
+def get_harvest_resources():
+    """
+    Liste toutes les ressources de récolte avec leurs informations.
+    Endpoint: GET /api/wakfu/harvest-resources
+    """
+    from ..models import HarvestResource, Item
+    from sqlalchemy import func
+
+    try:
+        # Récupérer toutes les ressources avec les infos des items associés
+        resources = (
+            db.session.query(HarvestResource, Item)
+            .outerjoin(Item, Item.wakfu_id == HarvestResource.item_id)
+            .all()
+        )
+
+        result = []
+        for resource, item in resources:
+            result.append({
+                "item_id": resource.item_id,
+                "name": item.name if item else f"Item #{resource.item_id}",
+                "level": item.level if item else None,
+                "rarity": item.rarity if item else None,
+                "icon_gfx_id": item.icon_gfx_id if item else None,
+                "quantity_min": resource.quantity_min,
+                "quantity_max": resource.quantity_max,
+                "drop_rate": resource.drop_rate,
+                "list_id": resource.list_id,
+            })
+
+        # Trier par nom
+        result.sort(key=lambda x: x["name"])
+
+        return jsonify({
+            "total": len(result),
+            "resources": result
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Erreur harvest resources: {e!r}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 # Fonctions utilitaires
 
 

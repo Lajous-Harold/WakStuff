@@ -201,3 +201,36 @@ class Item(db.Model):
         onupdate=now_utc,
         nullable=False,
     )
+
+
+class HarvestResource(db.Model):
+    """
+    Ressources de récolte depuis harvestLoots.json.
+    Ce sont les items obtenus en récoltant (bois, minerai, plantes, etc.)
+    """
+
+    __tablename__ = "harvest_resources"
+
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, nullable=False, unique=True, index=True)
+    
+    # Infos du loot
+    quantity_min = db.Column(db.Integer, default=1)
+    quantity_max = db.Column(db.Integer, default=1)
+    drop_rate = db.Column(db.Float, default=1.0)
+    list_id = db.Column(db.Integer, nullable=True)
+    
+    # Note: Le nom et les détails de l'item ne sont pas dans harvestLoots.json
+    # Ces ressources ne sont pas dans items.json, donc on stocke seulement les IDs
+    
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=now_utc,
+        nullable=False,
+    )
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        default=now_utc,
+        onupdate=now_utc,
+        nullable=False,
+    )

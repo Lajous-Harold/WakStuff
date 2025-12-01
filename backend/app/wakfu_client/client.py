@@ -165,3 +165,7 @@ class WakfuClient:
     def fetch_all_resources(self, version: Optional[str] = None) -> List[Dict[str, Any]]:
         """Récupère resources.json si disponible."""
         return self._fetch_resource("resources.json", version)
+
+    def fetch_harvest_loots(self, version: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Récupère harvestLoots.json pour les ressources de récolte."""
+        return self._fetch_resource("harvestLoots.json", version)

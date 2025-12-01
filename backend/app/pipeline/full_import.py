@@ -19,6 +19,7 @@ from typing import Any, Dict, List, Optional
 from ..database import db
 from ..models import (
     Action,
+    HarvestResource,
     ImportBatch,
     Item,
     ItemCategory,
@@ -97,7 +98,11 @@ def run_full_wakfu_import(batch: Optional[ImportBatch] = None) -> ImportBatch:
         logger.info("Import des recettes...")
         _import_recipes(client, current_version)
 
-        # Étape 4: Démarquer les anciennes données si changement de version
+        # Étape 4: Importer les ressources de récolte
+        logger.info("Import des ressources de récolte...")
+        _import_harvest_resources(client, current_version)
+
+        # Étape 5: Démarquer les anciennes données si changement de version
         _deprecate_old_data(current_version)
 
         # Finaliser le batch
@@ -354,6 +359,40 @@ def _import_recipes(client: WakfuClient, version: str):
 
     except Exception as e:
         logger.warning(f"Impossible d'importer les recettes: {e!r}")
+
+
+def _import_harvest_resources(client: WakfuClient, version: str):
+    """Import des ressources de récolte depuis harvestLoots.json."""
+    try:
+        loots_data = client.fetch_harvest_loots(version)
+        
+        logger.info(f"Traitement de {len(loots_data)} harvest loots...")
+        
+        imported_count = 0
+        for loot in loots_data:
+            item_id = loot.get("itemId")
+            
+            if not item_id:
+                continue
+            
+            # Créer ou mettre à jour la ressource
+            resource = HarvestResource.query.filter_by(item_id=item_id).first()
+            if resource is None:
+                resource = HarvestResource(item_id=item_id)
+                db.session.add(resource)
+                imported_count += 1
+            
+            # Mettre à jour les infos du loot
+            resource.quantity_min = loot.get("quantityMin", 1)
+            resource.quantity_max = loot.get("quantityMax", 1)
+            resource.drop_rate = loot.get("dropRate", 1.0)
+            resource.list_id = loot.get("listId")
+        
+        db.session.commit()
+        logger.info(f"Ressources de récolte importées: {imported_count} nouvelles, {len(loots_data)} total")
+        
+    except Exception as e:
+        logger.warning(f"Impossible d'importer les ressources de récolte: {e!r}")
 
 
 def _deprecate_old_data(current_version: str):

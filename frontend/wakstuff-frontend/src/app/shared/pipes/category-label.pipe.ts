@@ -32,22 +32,6 @@ export class CategoryLabelPipe implements PipeTransform {
     'equipments.costume': { fr: 'Cosmétiques', en: 'Cosmetics' },
     'equipments.emblem': { fr: 'Emblèmes', en: 'Emblems' },
 
-    // Ressources
-    resources: { fr: 'Ressources', en: 'Resources' },
-    'resources.ore': { fr: 'Minerais', en: 'Ores' },
-    'resources.plants': { fr: 'Plantes', en: 'Plants' },
-    'resources.wood': { fr: 'Bois', en: 'Wood' },
-    'resources.fish': { fr: 'Poissons', en: 'Fish' },
-    'resources.meat': { fr: 'Viandes', en: 'Meat' },
-    'resources.cereals': { fr: 'Céréales', en: 'Cereals' },
-    'resources.vegetables': { fr: 'Légumes', en: 'Vegetables' },
-    'resources.leather': { fr: 'Cuirs', en: 'Leather' },
-    'resources.gems': { fr: 'Gemmes', en: 'Gems' },
-    'resources.cloth': { fr: 'Tissus', en: 'Cloth' },
-    'resources.crafting_materials': { fr: 'Composants de craft', en: 'Crafting Components' },
-    'resources.monster': { fr: 'Ressources de monstres', en: 'Monster Resources' },
-    'resources.misc': { fr: 'Ressources diverses', en: 'Miscellaneous Resources' },
-
     // Consommables
     consumables: { fr: 'Consommables', en: 'Consumables' },
     'consumables.food': { fr: 'Nourriture', en: 'Food' },

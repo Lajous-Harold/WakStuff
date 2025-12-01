@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from .config import Config
 from .database import db
-from .models import Item, ItemRaw, ImportBatch
+from .models import Item, ItemRaw, ImportBatch, HarvestResource
 from flask_cors import CORS
 
 

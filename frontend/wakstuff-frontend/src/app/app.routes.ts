@@ -5,6 +5,7 @@ import { ImportsDashboard } from './features/imports/imports-dashboard/imports-d
 import { CraftCalculator } from './features/craft-calculator/craft-calculator';
 import { CategoriesView } from './features/categories/categories-view';
 import { StatsDashboard } from './features/stats/stats-dashboard';
+import { HarvestResourcesComponent } from './features/harvest-resources/harvest-resources-list/harvest-resources';
 import { importsResolver } from './core/resolvers/imports.resolver';
 
 export const routes: Routes = [
@@ -23,6 +24,11 @@ export const routes: Routes = [
   {
     path: 'categories',
     component: CategoriesView,
+  },
+
+  {
+    path: 'harvest-resources',
+    component: HarvestResourcesComponent,
   },
 
   {

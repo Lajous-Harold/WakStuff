@@ -14,7 +14,7 @@ sys.path.insert(0, str(backend_path))
 
 from app import create_app
 from app.database import db
-from app.models import Action, State, Job, ItemCategory, Recipe
+from app.models import Action, State, Job, ItemCategory, Recipe, HarvestResource
 
 print("Création de l'application Flask...")
 app = create_app()
