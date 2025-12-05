@@ -1,140 +1,185 @@
-from flask import Blueprint, jsonify, current_app
+"""
+Routes API pour gérer les imports de données Wakfu.
+Permet de lancer l'import complet manuellement via POST /api/imports/full
+"""
 
-from ..pipeline.full_import import run_full_wakfu_import
+from flask import Blueprint, jsonify, request
+from ..database import db
 from ..models import ImportBatch
+from ..pipeline.full_import import (
+    run_full_wakfu_import,
+    get_import_stats,
+    clear_all_data
+)
+import logging
 
-imports_bp = Blueprint("imports", __name__)
+bp = Blueprint('imports', __name__, url_prefix='/api/imports')
+logger = logging.getLogger(__name__)
 
 
-def serialize_batch(batch: ImportBatch) -> dict:
+@bp.route('/full', methods=['POST'])
+def launch_full_import():
     """
-    Sérialise un ImportBatch pour l'API.
-    """
-    return {
-        "id": batch.id,
-        "game_version": batch.game_version,
-        "started_at": batch.started_at.isoformat() if batch.started_at else None,
-        "ended_at": batch.ended_at.isoformat() if batch.ended_at else None,
-        "status": batch.status,
-        "total_items": batch.total_items,
-        "error_count": batch.error_count,
+    Lance l'import complet de toutes les données Wakfu.
+    
+    POST /api/imports/full
+    
+    Body (optionnel):
+    {
+        "clear_before": true  // Supprimer les données avant l'import
     }
-
-
-def build_icon_url(icon_gfx_id: int | None) -> str | None:
-    """
-    Génère l'URL de l'icône d'un item à partir de son icon_gfx_id.
-    Utilise un proxy local pour contourner les problèmes CORS.
-    """
-    if not icon_gfx_id:
-        return None
-
-    # Utilise le proxy local avec l'URL complète
-    return f"http://localhost:5000/api/proxy/icon/{icon_gfx_id}"
-
-
-@imports_bp.post("/run")
-def run_import():
-    """
-    Lance un import complet depuis l'API Wakfu via WakStuff.
-    Utilise maintenant le système complet avec classification et parsing d'effets.
+    
+    Retourne:
+    {
+        "status": "success",
+        "batch_id": 1,
+        "stats": {...},
+        "message": "Import terminé avec succès"
+    }
     """
     try:
+        data = request.get_json() or {}
+        clear_before = data.get('clear_before', False)
+        
+        # Nettoyer si demandé
+        if clear_before:
+            logger.info("Suppression des données existantes...")
+            clear_all_data()
+        
+        # Lancer l'import
+        logger.info("Lancement de l'import complet...")
         batch = run_full_wakfu_import()
         
-        payload = serialize_batch(batch)
-        payload["batch_id"] = batch.id
+        # Récupérer les stats
+        stats = get_import_stats()
         
-        return jsonify(payload), 201
-    except Exception as e:
-        current_app.logger.error(f"Erreur lors de l'import: {e}", exc_info=True)
         return jsonify({
-            "error": str(e),
-            "message": "Erreur lors de l'import des données Wakfu"
+            "status": "success",
+            "batch_id": batch.id,
+            "stats": stats,
+            "metadata": batch.import_metadata,
+            "message": f"Import terminé avec succès! {batch.items_imported} entrées importées.",
+            "started_at": batch.started_at.isoformat() if batch.started_at else None,
+            "completed_at": batch.completed_at.isoformat() if batch.completed_at else None
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de l'import: {e}", exc_info=True)
+        return jsonify({
+            "status": "error",
+            "message": str(e)
         }), 500
 
 
-@imports_bp.get("/")
-def list_imports():
+@bp.route('/stats', methods=['GET'])
+def get_stats():
     """
-    Retourne les derniers imports, le plus récent en premier.
-    """
-    batches = ImportBatch.query.order_by(ImportBatch.started_at.desc()).limit(20).all()
-
-    return jsonify([serialize_batch(b) for b in batches]), 200
-
-
-@imports_bp.delete("/")
-def delete_all_imports():
-    """
-    Supprime toutes les données de la base mais conserve la structure des tables.
-    Cela inclut :
-    - Import batches
-    - Items bruts (item_raw)
-    - Items parsés
-    - Catégories d'items
-    - Recettes
-    - Actions
-    - États
-    - Métiers
-    - Ressources de récolte
+    Récupère les statistiques de la base de données.
+    
+    GET /api/imports/stats
+    
+    Retourne le nombre d'entrées pour chaque table.
     """
     try:
-        from ..database import db
-        from ..models import (
-            Item, ItemRaw, ItemCategory, Recipe, 
-            Action, State, Job, HarvestResource
+        stats = get_import_stats()
+        
+        # Calculer les totaux par phase
+        phase_1_total = (
+            stats['recipe_categories'] + 
+            stats['item_types'] + 
+            stats['equipment_item_types'] + 
+            stats['resource_types']
         )
-        
-        # Compter avant suppression
-        import_count = ImportBatch.query.count()
-        item_count = Item.query.count()
-        recipe_count = Recipe.query.count()
-        action_count = Action.query.count()
-        state_count = State.query.count()
-        job_count = Job.query.count()
-        
-        # Supprimer toutes les données dans l'ordre (respecter les FK)
-        HarvestResource.query.delete()
-        Recipe.query.delete()
-        Item.query.delete()
-        ItemRaw.query.delete()  # Dépend de ImportBatch
-        ItemCategory.query.delete()
-        Action.query.delete()
-        State.query.delete()
-        Job.query.delete()
-        ImportBatch.query.delete()
-        
-        db.session.commit()
-        
-        message = (
-            f"Base de données nettoyée : "
-            f"{import_count} import(s), "
-            f"{item_count} item(s), "
-            f"{recipe_count} recette(s), "
-            f"{action_count} action(s), "
-            f"{state_count} état(s), "
-            f"{job_count} métier(s) supprimé(s)"
+        phase_2_total = (
+            stats['resources'] + 
+            stats['collectable_resources'] + 
+            stats['harvest_loots'] + 
+            stats['harvest_resources']
         )
-        
-        current_app.logger.info(message)
+        phase_3_total = stats['job_items'] + stats['items']
+        phase_4_total = (
+            stats['recipes'] + 
+            stats['recipe_ingredients'] + 
+            stats['recipe_results']
+        )
+        grand_total = phase_1_total + phase_2_total + phase_3_total + phase_4_total
         
         return jsonify({
-            "message": message,
-            "deleted": {
-                "imports": import_count,
-                "items": item_count,
-                "recipes": recipe_count,
-                "actions": action_count,
-                "states": state_count,
-                "jobs": job_count
+            "stats": stats,
+            "summary": {
+                "phase_1_total": phase_1_total,
+                "phase_2_total": phase_2_total,
+                "phase_3_total": phase_3_total,
+                "phase_4_total": phase_4_total,
+                "grand_total": grand_total
             }
         }), 200
         
     except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Erreur lors du nettoyage de la base: {e}", exc_info=True)
+        logger.error(f"Erreur lors de la récupération des stats: {e}", exc_info=True)
         return jsonify({
-            "error": str(e),
-            "message": "Erreur lors du nettoyage de la base de données"
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
+@bp.route('/batches', methods=['GET'])
+def get_batches():
+    """
+    Liste tous les batches d'import.
+    
+    GET /api/imports/batches?limit=10
+    """
+    try:
+        limit = request.args.get('limit', 10, type=int)
+        
+        batches = ImportBatch.query.order_by(
+            ImportBatch.started_at.desc()
+        ).limit(limit).all()
+        
+        return jsonify({
+            "batches": [b.to_dict() for b in batches]
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération des batches: {e}", exc_info=True)
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
+@bp.route('/clear', methods=['POST'])
+def clear_data():
+    """
+    Supprime toutes les données importées.
+    
+    POST /api/imports/clear
+    
+    Body:
+    {
+        "confirm": true  // Obligatoire pour confirmer
+    }
+    """
+    try:
+        data = request.get_json() or {}
+        
+        if not data.get('confirm'):
+            return jsonify({
+                "status": "error",
+                "message": "Confirmation requise (confirm: true)"
+            }), 400
+        
+        clear_all_data()
+        
+        return jsonify({
+            "status": "success",
+            "message": "Toutes les données ont été supprimées"
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de la suppression: {e}", exc_info=True)
+        return jsonify({
+            "status": "error",
+            "message": str(e)
         }), 500
