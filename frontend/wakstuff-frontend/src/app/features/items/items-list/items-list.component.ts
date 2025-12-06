@@ -170,28 +170,28 @@ export class ItemsListComponent implements OnInit {
 
   getRarityClass(rarity: number): string {
     const rarities = [
-      'common',
-      'common',
-      'unusual',
-      'rare',
-      'mythical',
-      'legendary',
-      'relic',
-      'souvenir',
+      'common', // 0 - Ancien objet (blanc)
+      'unusual', // 1 - Inhabituel (blanc)
+      'rare', // 2 - Rare (cyan)
+      'mythical', // 3 - Mythique (orange)
+      'legendary', // 4 - Légendaire (jaune)
+      'relic', // 5 - Relique (violet) - property 8
+      'souvenir', // 6 - Souvenir (cyan)
+      'epic', // 7 - Épique (rose) - property 12
     ];
     return rarities[rarity] || 'common';
   }
 
   getRarityLabel(rarity: number): string {
     const labels = [
-      'Commun',
-      'Commun',
-      'Inhabituel',
-      'Rare',
-      'Mythique',
-      'Légendaire',
-      'Relique',
-      'Souvenir',
+      'Ancien objet', // 0 - Blanc
+      'Inhabituel', // 1 - Blanc
+      'Rare', // 2 - Cyan
+      'Mythique', // 3 - Orange
+      'Légendaire', // 4 - Jaune
+      'Relique', // 5 - Violet (property 8)
+      'Souvenir', // 6 - Cyan
+      'Épique', // 7 - Rose (property 12)
     ];
     return labels[rarity] || 'Commun';
   }

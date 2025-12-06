@@ -119,7 +119,7 @@
     }
 
     &.rarity-unusual {
-      border-left-color: #3498db;
+      border-left-color: #ffffff;
     }
 
     &.rarity-rare {
@@ -140,6 +140,10 @@
 
     &.rarity-souvenir {
       border-left-color: #26d4ff;
+    }
+
+    &.rarity-epic {
+      border-left-color: #eb78bd;
     }
 
     .item-header {
@@ -201,8 +205,9 @@
         }
 
         &.rarity-unusual {
-          background: rgba(52, 152, 219, 0.15);
-          color: #2980b9;
+          background: rgba(255, 255, 255, 0.1);
+          color: #ffffff;
+          border: 1px solid #ddd;
         }
 
         &.rarity-rare {
@@ -228,6 +233,11 @@
         &.rarity-souvenir {
           background: rgba(38, 212, 255, 0.15);
           color: #1a9ecc;
+        }
+
+        &.rarity-epic {
+          background: rgba(235, 120, 189, 0.15);
+          color: #d15a9d;
         }
       }
     }
