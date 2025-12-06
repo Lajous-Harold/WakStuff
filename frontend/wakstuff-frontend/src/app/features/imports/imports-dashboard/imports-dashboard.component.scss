@@ -1,11 +1,11 @@
 .imports-dashboard {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 
   .page-header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 
     h1 {
       font-size: 2.5rem;
@@ -20,163 +20,335 @@
     }
   }
 
-  .import-section {
+  // Actions bar
+  .actions-bar {
     display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
 
-  .import-card {
-    background: white;
-    border-radius: 16px;
-    padding: 3rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    text-align: center;
+    button {
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
 
-    h2 {
-      font-size: 2rem;
-      color: #333;
-      margin: 0 0 1rem 0;
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     }
 
-    h3 {
-      font-size: 1.3rem;
-      color: #555;
-      margin: 2rem 0 1rem 0;
-      text-align: left;
+    .btn-import {
+      background: #3498db;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #2980b9;
+        transform: translateY(-2px);
+      }
     }
 
-    p {
-      font-size: 1.1rem;
-      color: #666;
-      line-height: 1.6;
-      margin: 0 0 2rem 0;
+    .btn-delete {
+      background: #e74c3c;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #c0392b;
+        transform: translateY(-2px);
+      }
     }
 
-    &.start {
-      border: 2px dashed #3498db;
-    }
+    .btn-reset {
+      background: #f39c12;
+      color: white;
 
-    &.importing {
-      border: 2px solid #f39c12;
-    }
-
-    &.success {
-      border: 2px solid #2ecc71;
-    }
-  }
-
-  .btn-import,
-  .btn-reimport {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-    color: white;
-    border: none;
-    padding: 1rem 2.5rem;
-    font-size: 1.2rem;
-    font-weight: 600;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
-    }
-
-    &:active {
-      transform: translateY(0);
+      &:hover:not(:disabled) {
+        background: #e67e22;
+        transform: translateY(-2px);
+      }
     }
   }
 
-  .btn-reimport {
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-    box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
-    margin-top: 2rem;
+  // Modale
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
 
-    &:hover {
-      box-shadow: 0 6px 12px rgba(46, 204, 113, 0.4);
-    }
-  }
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
 
-  .import-phases {
-    text-align: left;
-    margin-top: 2rem;
+      h2 {
+        margin: 0 0 1rem 0;
+        color: #e74c3c;
+      }
 
-    .phases-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+      p {
+        margin: 0.5rem 0;
+        line-height: 1.6;
 
-      .phase {
+        &.warning {
+          color: #e74c3c;
+          font-weight: 600;
+        }
+
+        &.info {
+          color: #3498db;
+          font-weight: 500;
+        }
+      }
+
+      .modal-actions {
         display: flex;
-        align-items: center;
         gap: 1rem;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        transition: all 0.2s;
+        margin-top: 2rem;
 
-        &.success {
-          background: #d5f4e6;
+        button {
+          flex: 1;
+          padding: 0.75rem;
+          border: none;
+          border-radius: 6px;
+          font-size: 1rem;
+          cursor: pointer;
+          transition: all 0.2s;
 
-          .phase-icon {
-            color: #27ae60;
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
           }
         }
 
-        .phase-icon {
-          font-size: 1.5rem;
-          font-weight: bold;
-          width: 32px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: white;
-          border-radius: 50%;
-          color: #999;
+        .btn-cancel {
+          background: #95a5a6;
+          color: white;
+
+          &:hover {
+            background: #7f8c8d;
+          }
         }
 
-        .phase-label {
-          font-size: 1rem;
-          color: #333;
-          font-weight: 500;
+        .btn-confirm-delete {
+          background: #e74c3c;
+          color: white;
+
+          &:hover:not(:disabled) {
+            background: #c0392b;
+          }
         }
       }
     }
   }
 
-  .import-stats {
-    text-align: left;
+  // Stats card
+  .stats-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+
+    h2 {
+      margin: 0 0 1rem 0;
+      font-size: 1.5rem;
+      color: #333;
+    }
 
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 1rem;
-      margin-top: 1rem;
 
       .stat-item {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
         padding: 1rem;
         background: #f8f9fa;
         border-radius: 8px;
-        border-left: 3px solid #3498db;
 
         label {
-          font-size: 0.85rem;
+          display: block;
+          font-size: 0.9rem;
           color: #666;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
+          margin-bottom: 0.5rem;
         }
 
         span {
-          font-size: 1.8rem;
+          display: block;
+          font-size: 1.5rem;
+          font-weight: 600;
           color: #333;
-          font-weight: 700;
+        }
+
+        &.highlight {
+          background: #3498db;
+          color: white;
+
+          label,
+          span {
+            color: white;
+          }
+        }
+      }
+    }
+  }
+
+  // Import card
+  .import-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+
+    h2 {
+      margin: 0 0 1rem 0;
+      font-size: 1.8rem;
+      color: #333;
+    }
+
+    &.importing {
+      text-align: center;
+
+      .import-message {
+        margin-top: 1rem;
+        color: #666;
+      }
+    }
+
+    &.success {
+      border-left: 4px solid #27ae60;
+    }
+  }
+
+  // History section
+  .history-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    h2 {
+      margin: 0 0 1.5rem 0;
+      font-size: 1.5rem;
+      color: #333;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #999;
+    }
+
+    .batches-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      .batch-item {
+        padding: 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: #3498db;
+        }
+
+        &.status-success {
+          border-color: #27ae60;
+          background: #f0fdf4;
+        }
+
+        &.status-error {
+          border-color: #e74c3c;
+          background: #fef2f2;
+        }
+
+        .batch-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.5rem;
+
+          .batch-info {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+
+            .batch-id {
+              font-weight: 600;
+              color: #333;
+            }
+
+            .batch-date {
+              color: #666;
+              font-size: 0.9rem;
+            }
+
+            .batch-version {
+              background: #e8f4ff;
+              color: #2980b9;
+              padding: 0.2rem 0.5rem;
+              border-radius: 4px;
+              font-size: 0.75rem;
+              font-weight: 600;
+              font-family: 'Courier New', monospace;
+            }
+          }
+
+          .batch-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: #3498db;
+            color: white;
+          }
+        }
+
+        .batch-details {
+          display: flex;
+          gap: 1.5rem;
+          font-size: 0.9rem;
+          color: #666;
+          margin-bottom: 0.5rem;
+        }
+
+        .batch-stats {
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+          margin-top: 0.5rem;
+
+          .stat-mini {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+
+            label {
+              color: #666;
+              font-weight: 500;
+            }
+
+            span {
+              color: #333;
+              font-weight: 600;
+            }
+          }
         }
       }
     }

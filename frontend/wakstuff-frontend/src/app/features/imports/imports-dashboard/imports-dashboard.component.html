@@ -1,111 +1,215 @@
 <div class="imports-dashboard">
   <header class="page-header">
     <h1>Importation des données Wakfu</h1>
-    <p class="subtitle">Importer toutes les données depuis l'API Wakfu officielle</p>
+    <p class="subtitle">Gérer les imports et les données de la base</p>
   </header>
 
-  <div class="import-section">
-    @if (!importing() && !importResult()) {
-    <div class="import-card start">
-      <h2>Prêt à importer</h2>
-      <p>
-        Cette action va importer toutes les données Wakfu (items, recettes, ressources, métiers)
-        depuis l'API officielle.
-      </p>
+  @if (error()) {
+  <app-error-message [message]="error()!" />
+  }
 
-      <button class="btn-import" (click)="startImport()">🚀 Lancer l'importation</button>
-    </div>
-    } @if (importing()) {
-    <div class="import-card importing">
-      <app-loading-spinner message="Importation en cours..." [size]="60" />
+  <!-- Actions principales -->
+  <div class="actions-bar">
+    <button class="btn-import" (click)="startImport()" [disabled]="importing()">
+      @if (importing()) {
+      <span>⏳ Importation en cours...</span>
+      } @else {
+      <span>🚀 Lancer un import complet</span>
+      }
+    </button>
 
-      <div class="import-phases">
-        <h3>Progression</h3>
-        <div class="phases-list">
-          <div class="phase">
-            <span class="phase-icon">{{ getPhaseIcon('phase1') }}</span>
-            <span class="phase-label">Phase 1: Métadonnées</span>
-          </div>
-          <div class="phase">
-            <span class="phase-icon">{{ getPhaseIcon('phase2') }}</span>
-            <span class="phase-label">Phase 2: Items & Ressources</span>
-          </div>
-          <div class="phase">
-            <span class="phase-icon">{{ getPhaseIcon('phase3') }}</span>
-            <span class="phase-label">Phase 3: Recettes</span>
-          </div>
-          <div class="phase">
-            <span class="phase-icon">{{ getPhaseIcon('phase4') }}</span>
-            <span class="phase-label">Phase 4: Relations</span>
-          </div>
-        </div>
+    <button class="btn-delete" (click)="confirmDelete()" [disabled]="clearing() || importing()">
+      🗑️ Supprimer toutes les données
+    </button>
+
+    <button
+      class="btn-reset"
+      (click)="confirmResetHistory()"
+      [disabled]="clearing() || importing()"
+    >
+      🔄 Réinitialiser l'historique
+    </button>
+  </div>
+
+  <!-- Modale de confirmation de suppression -->
+  @if (showDeleteConfirm()) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Confirmation de suppression</h2>
+      <p>Êtes-vous sûr de vouloir supprimer <strong>TOUTES</strong> les données importées ?</p>
+      <p class="warning">Cette action est irréversible !</p>
+      <p class="info">💡 L'historique des imports sera conservé</p>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
+        <button class="btn-confirm-delete" (click)="clearAllData()" [disabled]="clearing()">
+          @if (clearing()) {
+          <span>Suppression...</span>
+          } @else {
+          <span>Oui, tout supprimer</span>
+          }
+        </button>
       </div>
     </div>
-    } @if (importResult() && !importing()) {
-    <div class="import-card success">
-      <h2>✅ Importation terminée</h2>
+  </div>
+  }
 
-      <div class="import-stats">
-        <h3>Statistiques</h3>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <label>Items</label>
-            <span>{{ importResult()!.grand_total }}</span>
-          </div>
-          <div class="stat-item">
-            <label>Phase 1</label>
-            <span>{{ importResult()!.phase_1_total }}</span>
-          </div>
-          <div class="stat-item">
-            <label>Phase 2</label>
-            <span>{{ importResult()!.phase_2_total }}</span>
-          </div>
-          <div class="stat-item">
-            <label>Phase 3</label>
-            <span>{{ importResult()!.phase_3_total }}</span>
-          </div>
-          <div class="stat-item">
-            <label>Phase 4</label>
-            <span>{{ importResult()!.phase_4_total }}</span>
-          </div>
-          <div class="stat-item">
-            <label>Durée totale</label>
-            <span>{{ importResult()!.timing.total }}s</span>
-          </div>
-        </div>
+  <!-- Modale de confirmation de réinitialisation historique -->
+  @if (showResetHistoryConfirm()) {
+  <div class="modal-overlay" (click)="cancelResetHistory()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Réinitialiser l'historique</h2>
+      <p>Êtes-vous sûr de vouloir supprimer <strong>TOUT L'HISTORIQUE</strong> des imports ?</p>
+      <p class="warning">Cette action est irréversible !</p>
+      <p class="info">💡 Les données actuelles seront conservées</p>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelResetHistory()">Annuler</button>
+        <button class="btn-confirm-delete" (click)="resetImportHistory()" [disabled]="clearing()">
+          @if (clearing()) {
+          <span>Suppression...</span>
+          } @else {
+          <span>Oui, réinitialiser</span>
+          }
+        </button>
       </div>
-
-      <div class="import-phases">
-        <h3>Phases complétées</h3>
-        <div class="phases-list">
-          <div class="phase success">
-            <span class="phase-icon">✓</span>
-            <span class="phase-label">Phase 1: Métadonnées</span>
-          </div>
-          <div class="phase success">
-            <span class="phase-icon">✓</span>
-            <span class="phase-label">Phase 2: Items & Ressources</span>
-          </div>
-          <div class="phase success">
-            <span class="phase-icon">✓</span>
-            <span class="phase-label">Phase 3: Recettes</span>
-          </div>
-          <div class="phase success">
-            <span class="phase-icon">✓</span>
-            <span class="phase-label">Phase 4: Relations</span>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn-reimport" (click)="startImport()">🔄 Réimporter</button>
     </div>
-    } @if (error()) {
-    <app-error-message
-      [message]="error()!"
-      type="error"
-      [dismissible]="true"
-      (dismiss)="error.set(null)"
-    />
+  </div>
+  }
+
+  <!-- Statistiques actuelles -->
+  @if (stats()) {
+  <div class="stats-card">
+    <h2>📊 Données actuelles</h2>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <label>Items</label>
+        <span>{{ stats().stats?.items || 0 }}</span>
+      </div>
+      <div class="stat-item">
+        <label>Recettes</label>
+        <span>{{ stats().stats?.recipes || 0 }}</span>
+      </div>
+      <div class="stat-item">
+        <label>Ressources</label>
+        <span>{{ stats().stats?.resources || 0 }}</span>
+      </div>
+      <div class="stat-item">
+        <label>Items métiers</label>
+        <span>{{ stats().stats?.job_items || 0 }}</span>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Import en cours -->
+  @if (importing()) {
+  <div class="import-card importing">
+    <app-loading-spinner message="Importation en cours..." [size]="60" />
+    <p class="import-message">
+      L'importation peut prendre plusieurs secondes. Veuillez patienter...
+    </p>
+  </div>
+  }
+
+  <!-- Résultat de l'import actuel -->
+  @if (importResult() && !importing()) {
+  <div class="import-card success">
+    <h2>✅ Import terminé avec succès</h2>
+
+    <div class="import-stats">
+      <div class="stats-grid">
+        @if (importResult()!.metadata.summary; as summary) {
+        <div class="stat-item highlight">
+          <label>Total importé</label>
+          <span>{{ summary.grand_total }} entrées</span>
+        </div>
+        <div class="stat-item">
+          <label>Types & Catégories</label>
+          <span>{{ summary.phase_1_total }}</span>
+        </div>
+        <div class="stat-item">
+          <label>Ressources & Récolte</label>
+          <span>{{ summary.phase_2_total }}</span>
+        </div>
+        <div class="stat-item">
+          <label>Items & Métiers</label>
+          <span>{{ summary.phase_3_total }}</span>
+        </div>
+        <div class="stat-item">
+          <label>Recettes & Craft</label>
+          <span>{{ summary.phase_4_total }}</span>
+        </div>
+        } @if (importResult()!.started_at && importResult()!.completed_at) {
+        <div class="stat-item">
+          <label>Durée totale</label>
+          <span>{{
+            formatDuration(importResult()!.started_at!, importResult()!.completed_at!)
+          }}</span>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Historique des imports -->
+  <div class="history-section">
+    <h2>📜 Historique des imports</h2>
+
+    @if (loading()) {
+    <app-loading-spinner message="Chargement de l'historique..." />
+    } @else if (batches().length === 0) {
+    <div class="empty-state">
+      <p>Aucun import effectué pour le moment</p>
+    </div>
+    } @else {
+    <div class="batches-list">
+      @for (batch of batches(); track batch.id) {
+      <div class="batch-item" [class]="getStatusClass(batch.status)">
+        <div class="batch-header">
+          <div class="batch-info">
+            <span class="batch-id">#{{ batch.id }}</span>
+            <span class="batch-date">{{ formatDate(batch.started_at) }}</span>
+            @if (batch.game_version) {
+            <span class="batch-version">v{{ batch.game_version }}</span>
+            }
+          </div>
+          <span class="batch-status">{{ batch.status }}</span>
+        </div>
+
+        @if (batch.completed_at) {
+        <div class="batch-details">
+          <span class="batch-duration"
+            >Durée: {{ formatDuration(batch.started_at, batch.completed_at) }}</span
+          >
+          @if (batch.import_metadata?.summary?.grand_total; as total) {
+          <span class="batch-total">Total: {{ total }} entrées</span>
+          }
+        </div>
+        } @if (batch.import_metadata?.stats; as stats) {
+        <div class="batch-stats">
+          @if (stats['phase_3']?.['items']; as items) {
+          <div class="stat-mini">
+            <label>Items:</label>
+            <span>{{ items }}</span>
+          </div>
+          } @if (stats['phase_4']?.['recipes']; as recipes) {
+          <div class="stat-mini">
+            <label>Recettes:</label>
+            <span>{{ recipes }}</span>
+          </div>
+          } @if (stats['phase_2']?.['resources']; as resources) {
+          <div class="stat-mini">
+            <label>Ressources:</label>
+            <span>{{ resources }}</span>
+          </div>
+          }
+        </div>
+        }
+      </div>
+      }
+    </div>
     }
   </div>
 </div>
