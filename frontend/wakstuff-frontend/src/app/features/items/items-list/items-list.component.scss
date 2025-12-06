@@ -115,35 +115,35 @@
     }
 
     &.rarity-common {
-      border-left-color: #ffffff;
+      border-left-color: var(--rarity-common);
     }
 
     &.rarity-unusual {
-      border-left-color: #ffffff;
+      border-left-color: var(--rarity-unusual);
     }
 
     &.rarity-rare {
-      border-left-color: #12ff88;
+      border-left-color: var(--rarity-rare);
     }
 
     &.rarity-mythical {
-      border-left-color: #f2ba00;
+      border-left-color: var(--rarity-mythical);
     }
 
     &.rarity-legendary {
-      border-left-color: #edf500;
+      border-left-color: var(--rarity-legendary);
     }
 
     &.rarity-relic {
-      border-left-color: #b77fff;
+      border-left-color: var(--rarity-relic);
     }
 
     &.rarity-souvenir {
-      border-left-color: #26d4ff;
+      border-left-color: var(--rarity-souvenir);
     }
 
     &.rarity-epic {
-      border-left-color: #eb78bd;
+      border-left-color: var(--rarity-epic);
     }
 
     .item-header {
@@ -200,44 +200,44 @@
 
         &.rarity-common {
           background: rgba(255, 255, 255, 0.1);
-          color: #ffffff;
+          color: var(--rarity-common);
           border: 1px solid #ddd;
         }
 
         &.rarity-unusual {
           background: rgba(255, 255, 255, 0.1);
-          color: #ffffff;
+          color: var(--rarity-unusual);
           border: 1px solid #ddd;
         }
 
         &.rarity-rare {
           background: rgba(18, 255, 136, 0.15);
-          color: #0db36a;
+          color: var(--rarity-rare);
         }
 
         &.rarity-mythical {
           background: rgba(242, 186, 0, 0.15);
-          color: #c29500;
+          color: var(--rarity-mythical);
         }
 
         &.rarity-legendary {
           background: rgba(237, 245, 0, 0.15);
-          color: #b5bc00;
+          color: var(--rarity-legendary);
         }
 
         &.rarity-relic {
           background: rgba(183, 127, 255, 0.15);
-          color: #8e5dd9;
+          color: var(--rarity-relic);
         }
 
         &.rarity-souvenir {
           background: rgba(38, 212, 255, 0.15);
-          color: #1a9ecc;
+          color: var(--rarity-souvenir);
         }
 
         &.rarity-epic {
           background: rgba(235, 120, 189, 0.15);
-          color: #d15a9d;
+          color: var(--rarity-epic);
         }
       }
     }

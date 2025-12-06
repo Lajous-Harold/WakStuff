@@ -1,5 +1,16 @@
-import { Component, OnInit, ChangeDetectionStrategy, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  signal,
+  computed,
+  effect,
+  ElementRef,
+  viewChildren,
+  afterNextRender,
+  Injector,
+} from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ItemsService, ItemFilters } from '../../../core/services/items.service';
 import { ImportStatusService } from '../../../core/services/import-status.service';
 import { Item } from '../../../core/models';
@@ -35,6 +46,9 @@ export class ItemsListComponent implements OnInit {
   hasData = signal(true);
   equipmentTypes = signal<any[]>([]);
 
+  // Valeur de recherche synchronisée avec la barre de recherche
+  searchValue = signal<string>('');
+
   // Filtres
   filters = signal<ItemFilters>({
     page: 1,
@@ -55,10 +69,43 @@ export class ItemsListComponent implements OnInit {
   constructor(
     private itemsService: ItemsService,
     private importStatusService: ImportStatusService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private route: ActivatedRoute,
+    private injector: Injector
+  ) {
+    // Effect pour synchroniser les valeurs des inputs avec le signal filters
+    afterNextRender(
+      () => {
+        effect(
+          () => {
+            const currentFilters = this.filters();
+            this.syncInputsWithFilters(currentFilters);
+          },
+          { injector: this.injector }
+        );
+      },
+      { injector: this.injector }
+    );
+  }
 
   ngOnInit(): void {
+    // Restaurer les filtres depuis les query params
+    this.route.queryParams.subscribe((params) => {
+      const filters: ItemFilters = {
+        page: params['page'] ? Number(params['page']) : 1,
+        per_page: params['per_page'] ? Number(params['per_page']) : 25,
+        search: params['search'] || undefined,
+        equipment_type_id: params['equipment_type_id'] || undefined,
+        rarity: params['rarity'] ? Number(params['rarity']) : undefined,
+        level_min: params['level_min'] ? Number(params['level_min']) : undefined,
+        level_max: params['level_max'] ? Number(params['level_max']) : undefined,
+      };
+      this.filters.set(filters);
+
+      // Synchroniser la valeur de recherche avec la barre de recherche
+      this.searchValue.set(params['search'] || '');
+    });
+
     this.loadEquipmentTypes();
     this.loadItems();
   }
@@ -74,9 +121,48 @@ export class ItemsListComponent implements OnInit {
     });
   }
 
+  private updateUrl(): void {
+    // Créer les query params à partir des filtres
+    const queryParams: any = {};
+    const currentFilters = this.filters();
+
+    if (currentFilters.page && currentFilters.page !== 1) {
+      queryParams['page'] = currentFilters.page;
+    }
+    if (currentFilters.per_page && currentFilters.per_page !== 25) {
+      queryParams['per_page'] = currentFilters.per_page;
+    }
+    if (currentFilters.search) {
+      queryParams['search'] = currentFilters.search;
+    }
+    if (currentFilters.equipment_type_id) {
+      queryParams['equipment_type_id'] = currentFilters.equipment_type_id;
+    }
+    if (currentFilters.rarity !== undefined) {
+      queryParams['rarity'] = currentFilters.rarity;
+    }
+    if (currentFilters.level_min) {
+      queryParams['level_min'] = currentFilters.level_min;
+    }
+    if (currentFilters.level_max) {
+      queryParams['level_max'] = currentFilters.level_max;
+    }
+
+    // Mettre à jour l'URL sans recharger le composant
+    // Ne pas utiliser 'merge' pour permettre la suppression des paramètres vides
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      replaceUrl: true,
+    });
+  }
+
   loadItems(): void {
     this.loading.set(true);
     this.error.set(null);
+
+    // Mettre à jour l'URL avec les filtres actuels
+    this.updateUrl();
 
     // Vérifier d'abord si des données ont été importées
     this.importStatusService.checkImportStatus().subscribe({
@@ -116,7 +202,9 @@ export class ItemsListComponent implements OnInit {
   }
 
   onSearch(query: string): void {
-    this.filters.update((f) => ({ ...f, search: query, page: 1 }));
+    // Si la query est vide, la mettre à undefined pour la retirer de l'URL
+    const searchValue = query.trim() || undefined;
+    this.filters.update((f) => ({ ...f, search: searchValue, page: 1 }));
     this.loadItems();
   }
 
@@ -133,7 +221,10 @@ export class ItemsListComponent implements OnInit {
 
   onEquipmentTypeChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
-    const value = select.value ? Number(select.value) : undefined;
+    const rawValue = select.value;
+    // Garder en string si c'est une catégorie groupée (weapon_1h, weapon_2h, etc.)
+    // Convertir en number si c'est un ID numérique
+    const value = rawValue ? (isNaN(Number(rawValue)) ? rawValue : Number(rawValue)) : undefined;
     this.filters.update((f) => ({ ...f, equipment_type_id: value, page: 1 }));
     this.loadItems();
   }
@@ -198,5 +289,31 @@ export class ItemsListComponent implements OnInit {
 
   getCleanText(text: string | null | undefined): string {
     return cleanWakfuText(text);
+  }
+
+  private syncInputsWithFilters(filters: ItemFilters): void {
+    // Synchroniser equipment type select
+    const equipmentSelect = document.getElementById('equipment-type') as HTMLSelectElement;
+    if (equipmentSelect) {
+      equipmentSelect.value = filters.equipment_type_id?.toString() || '';
+    }
+
+    // Synchroniser rarity select
+    const raritySelect = document.getElementById('rarity') as HTMLSelectElement;
+    if (raritySelect) {
+      raritySelect.value = filters.rarity !== undefined ? filters.rarity.toString() : '';
+    }
+
+    // Synchroniser level min input
+    const levelMinInput = document.getElementById('level-min') as HTMLInputElement;
+    if (levelMinInput) {
+      levelMinInput.value = filters.level_min?.toString() || '';
+    }
+
+    // Synchroniser level max input
+    const levelMaxInput = document.getElementById('level-max') as HTMLInputElement;
+    if (levelMaxInput) {
+      levelMaxInput.value = filters.level_max?.toString() || '';
+    }
   }
 }

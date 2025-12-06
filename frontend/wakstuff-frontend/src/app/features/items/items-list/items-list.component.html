@@ -10,13 +10,18 @@
     <app-search-bar
       placeholder="Rechercher un item..."
       [debounceTime]="500"
+      [(value)]="searchValue"
       (search)="onSearch($event)"
     />
 
     <div class="filters-row">
       <div class="filter-group">
         <label for="equipment-type">Catégorie d'équipement</label>
-        <select id="equipment-type" (change)="onEquipmentTypeChange($event)">
+        <select
+          id="equipment-type"
+          [value]="filters().equipment_type_id || ''"
+          (change)="onEquipmentTypeChange($event)"
+        >
           <option value="">Toutes les catégories</option>
           @for (type of equipmentTypes(); track type.wakfu_id) {
           <option [value]="type.wakfu_id">{{ getCleanText(type.title) }}</option>
@@ -26,7 +31,11 @@
 
       <div class="filter-group">
         <label for="rarity">Rareté</label>
-        <select id="rarity" (change)="onRarityChange($event)">
+        <select
+          id="rarity"
+          [value]="filters().rarity !== undefined ? filters().rarity : ''"
+          (change)="onRarityChange($event)"
+        >
           <option value="">Toutes les raretés</option>
           <option value="1">Inhabituel</option>
           <option value="2">Rare</option>
@@ -46,6 +55,7 @@
           placeholder="Min"
           min="1"
           max="230"
+          [value]="filters().level_min || ''"
           (change)="onLevelMinChange($event)"
         />
       </div>
@@ -58,6 +68,7 @@
           placeholder="Max"
           min="1"
           max="230"
+          [value]="filters().level_max || ''"
           (change)="onLevelMaxChange($event)"
         />
       </div>
