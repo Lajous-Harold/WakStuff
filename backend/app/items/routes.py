@@ -4,7 +4,7 @@ Routes API pour les items.
 from flask import Blueprint, jsonify, request
 from sqlalchemy import or_
 from ..database import db
-from ..models import Item, ItemType, ItemCategory, JobItem
+from ..models import Item, ItemType, ItemCategory, JobItem, EquipmentItemType
 
 bp = Blueprint('items', __name__)
 
@@ -19,6 +19,7 @@ def get_items():
     Query params:
     - search: Recherche dans le titre
     - item_type_id: Filtrer par type d'item
+    - equipment_type_id: Filtrer par type d'équipement
     - level_min, level_max: Niveau
     - rarity: Rareté (0-7)
     - page, per_page: Pagination
@@ -26,6 +27,7 @@ def get_items():
     try:
         search = request.args.get('search', '').strip()
         item_type_id = request.args.get('item_type_id', type=int)
+        equipment_type_id = request.args.get('equipment_type_id', type=int)
         level_min = request.args.get('level_min', type=int)
         level_max = request.args.get('level_max', type=int)
         rarity = request.args.get('rarity', type=int)
@@ -47,6 +49,9 @@ def get_items():
         if item_type_id:
             query = query.filter(Item.item_type_id == item_type_id)
         
+        if equipment_type_id:
+            query = query.filter(Item.equipment_type_id == equipment_type_id)
+        
         if level_min:
             query = query.filter(Item.level >= level_min)
         
@@ -56,11 +61,30 @@ def get_items():
         if rarity is not None:
             query = query.filter(Item.rarity == rarity)
         
-        query = query.order_by(Item.level.desc(), Item.wakfu_id)
+        query = query.order_by(Item.level.asc(), Item.wakfu_id)
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
         
+        # Enrichir les items avec les titres des types
+        items_data = []
+        for item in pagination.items:
+            item_dict = item.to_dict()
+            
+            # Ajouter le titre du type d'item si disponible
+            if item.item_type_id:
+                item_type = ItemType.query.filter_by(wakfu_id=item.item_type_id).first()
+                if item_type:
+                    item_dict['item_type_title'] = item_type.to_dict().get('title', '')
+            
+            # Ajouter le titre du type d'équipement si disponible
+            if item.equipment_type_id:
+                equipment_type = EquipmentItemType.query.filter_by(wakfu_id=item.equipment_type_id).first()
+                if equipment_type:
+                    item_dict['equipment_type_title'] = equipment_type.to_dict().get('title', '')
+            
+            items_data.append(item_dict)
+        
         return jsonify({
-            'items': [item.to_dict() for item in pagination.items],
+            'items': items_data,
             'total': pagination.total,
             'page': page,
             'per_page': per_page,
@@ -105,6 +129,20 @@ def get_item_types():
     
     return jsonify({
         'item_types': [t.to_dict() for t in types]
+    })
+
+
+@bp.route('/equipment-types', methods=['GET'])
+def get_equipment_types():
+    """
+    GET /api/items/equipment-types
+    
+    Liste tous les types d'équipements.
+    """
+    types = EquipmentItemType.query.order_by(EquipmentItemType.wakfu_id).all()
+    
+    return jsonify({
+        'equipment_types': [t.to_dict() for t in types]
     })
 
 

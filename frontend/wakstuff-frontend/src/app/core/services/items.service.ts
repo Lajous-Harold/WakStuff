@@ -7,6 +7,7 @@ import { environment } from '../config';
 export interface ItemFilters {
   search?: string;
   item_type_id?: number;
+  equipment_type_id?: number;
   rarity?: number;
   level_min?: number;
   level_max?: number;
@@ -41,5 +42,9 @@ export class ItemsService {
 
   getItemTypes(): Observable<any> {
     return this.http.get(`${this.apiUrl}/items/types`);
+  }
+
+  getEquipmentTypes(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/items/equipment-types`);
   }
 }

@@ -68,8 +68,8 @@ export class ItemDetailsComponent implements OnInit {
         if (err.status === 404) {
           this.error.set('Item non trouvé');
         } else {
-          console.error('Erreur lors du chargement de l\'item', err);
-          this.error.set('Erreur lors du chargement de l\'item');
+          console.error("Erreur lors du chargement de l'item", err);
+          this.error.set("Erreur lors du chargement de l'item");
         }
         this.loading.set(false);
       },

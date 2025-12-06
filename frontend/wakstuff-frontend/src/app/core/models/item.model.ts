@@ -7,6 +7,9 @@ export interface Item {
   rarity: number; // 0-7
   item_type_id: number;
   item_type_title?: string;
+  equipment_type_id?: number;
+  equipment_type_title?: string;
+  icon_gfx_id?: number;
   image_url?: string;
 }
 
@@ -27,7 +30,7 @@ export interface ItemsListResponse {
   total: number;
   page: number;
   per_page: number;
-  total_pages: number;
+  pages: number;
 }
 
 // Pour compatibilité avec code existant

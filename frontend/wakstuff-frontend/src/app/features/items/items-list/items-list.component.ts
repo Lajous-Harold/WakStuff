@@ -11,6 +11,8 @@ import {
   SearchBarComponent,
 } from '../../../shared/components';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { environment } from '../../../core/config';
+import { cleanWakfuText } from '../../../shared/utils';
 
 @Component({
   selector: 'app-items-list',
@@ -31,6 +33,7 @@ export class ItemsListComponent implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
   hasData = signal(true);
+  equipmentTypes = signal<any[]>([]);
 
   // Filtres
   filters = signal<ItemFilters>({
@@ -56,7 +59,19 @@ export class ItemsListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadEquipmentTypes();
     this.loadItems();
+  }
+
+  loadEquipmentTypes(): void {
+    this.itemsService.getEquipmentTypes().subscribe({
+      next: (response) => {
+        this.equipmentTypes.set(response.equipment_types || []);
+      },
+      error: (err) => {
+        console.error("Erreur lors du chargement des types d'équipement", err);
+      },
+    });
   }
 
   loadItems(): void {
@@ -81,7 +96,7 @@ export class ItemsListComponent implements OnInit {
           next: (response) => {
             this.items.set(response.items);
             this.totalItems.set(response.total);
-            this.totalPages.set(response.total_pages);
+            this.totalPages.set(response.pages);
             this.hasData.set(response.total > 0 || !!this.filters().search);
             this.loading.set(false);
           },
@@ -116,6 +131,39 @@ export class ItemsListComponent implements OnInit {
     this.loadItems();
   }
 
+  onEquipmentTypeChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value ? Number(select.value) : undefined;
+    this.filters.update((f) => ({ ...f, equipment_type_id: value, page: 1 }));
+    this.loadItems();
+  }
+
+  onRarityChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value ? Number(select.value) : undefined;
+    this.filters.update((f) => ({ ...f, rarity: value, page: 1 }));
+    this.loadItems();
+  }
+
+  onLevelMinChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value ? Number(input.value) : undefined;
+    this.filters.update((f) => ({ ...f, level_min: value, page: 1 }));
+    this.loadItems();
+  }
+
+  onLevelMaxChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value ? Number(input.value) : undefined;
+    this.filters.update((f) => ({ ...f, level_max: value, page: 1 }));
+    this.loadItems();
+  }
+
+  getItemImageUrl(iconGfxId: number): string {
+    // Utiliser le proxy backend pour éviter les problèmes CORS avec le CDN Ankama
+    return `${environment.apiUrl}/proxy/icon/${iconGfxId}`;
+  }
+
   viewDetails(wakfuId: number): void {
     this.router.navigate(['/items', wakfuId]);
   }
@@ -146,5 +194,9 @@ export class ItemsListComponent implements OnInit {
       'Souvenir',
     ];
     return labels[rarity] || 'Commun';
+  }
+
+  getCleanText(text: string | null | undefined): string {
+    return cleanWakfuText(text);
   }
 }

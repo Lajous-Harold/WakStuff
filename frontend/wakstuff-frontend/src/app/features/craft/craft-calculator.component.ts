@@ -95,7 +95,7 @@ export class CraftCalculatorComponent implements OnInit {
         this.hasData.set(false);
         return;
       }
-      
+
       this.targetWakfuId.set(wakfuId);
       this.loadCraftTree(wakfuId);
     }

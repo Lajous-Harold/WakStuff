@@ -19,12 +19,16 @@ export class StatsService {
     return this.http.get<GlobalStats>(`${this.apiUrl}/stats/overview`);
   }
 
-  globalSearch(query: string, limit: number = 20, page: number = 1): Observable<GlobalSearchResult> {
+  globalSearch(
+    query: string,
+    limit: number = 20,
+    page: number = 1
+  ): Observable<GlobalSearchResult> {
     return this.http.get<GlobalSearchResult>(`${this.apiUrl}/stats/global`, {
-      params: { 
-        query, 
+      params: {
+        query,
         limit: limit.toString(),
-        page: page.toString()
+        page: page.toString(),
       },
     });
   }

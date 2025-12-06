@@ -12,6 +12,56 @@
       [debounceTime]="500"
       (search)="onSearch($event)"
     />
+
+    <div class="filters-row">
+      <div class="filter-group">
+        <label for="equipment-type">Catégorie d'équipement</label>
+        <select id="equipment-type" (change)="onEquipmentTypeChange($event)">
+          <option value="">Toutes les catégories</option>
+          @for (type of equipmentTypes(); track type.wakfu_id) {
+          <option [value]="type.wakfu_id">{{ getCleanText(type.title) }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="rarity">Rareté</label>
+        <select id="rarity" (change)="onRarityChange($event)">
+          <option value="">Toutes les raretés</option>
+          <option value="0">Commun</option>
+          <option value="2">Inhabituel</option>
+          <option value="3">Rare</option>
+          <option value="4">Mythique</option>
+          <option value="5">Légendaire</option>
+          <option value="6">Relique</option>
+          <option value="7">Souvenir</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="level-min">Niveau min</label>
+        <input
+          type="number"
+          id="level-min"
+          placeholder="Min"
+          min="1"
+          max="230"
+          (change)="onLevelMinChange($event)"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="level-max">Niveau max</label>
+        <input
+          type="number"
+          id="level-max"
+          placeholder="Max"
+          min="1"
+          max="230"
+          (change)="onLevelMaxChange($event)"
+        />
+      </div>
+    </div>
   </div>
 
   @if (loading()) {
@@ -41,21 +91,27 @@
       [class]="'rarity-' + getRarityClass(item.rarity)"
       (click)="viewDetails(item.wakfu_id)"
     >
+      @if (item.icon_gfx_id) {
+      <div class="item-icon">
+        <img [src]="getItemImageUrl(item.icon_gfx_id)" [alt]="item.title" loading="lazy" />
+      </div>
+      }
+
       <div class="item-header">
         <h3 class="item-title">{{ item.title }}</h3>
         <span class="item-level">Niv. {{ item.level }}</span>
       </div>
 
       <div class="item-meta">
-        <span class="item-type">{{ item.item_type_title || 'Item' }}</span>
+        @if (item.equipment_type_title) {
+        <span class="item-category">{{ getCleanText(item.equipment_type_title) }}</span>
+        } @else {
+        <span class="item-type">{{ getCleanText(item.item_type_title) || 'Item' }}</span>
+        }
         <span class="item-rarity" [class]="'rarity-' + getRarityClass(item.rarity)">
           {{ getRarityLabel(item.rarity) }}
         </span>
       </div>
-
-      @if (item.description) {
-      <p class="item-description">{{ item.description }}</p>
-      }
     </div>
     }
   </div>
