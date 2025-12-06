@@ -11,61 +11,207 @@
   <app-error-message [message]="error()!" type="error" />
   <button class="btn-back" (click)="goBack()">← Retour à la liste</button>
   } @else if (item()) {
+
+  <!-- Header avec retour et titre -->
   <header class="page-header">
-    <button class="btn-back" (click)="goBack()">← Retour</button>
+    <button class="btn-back" (click)="goBack()">
+      <span class="icon">←</span>
+      <span>Retour</span>
+    </button>
     <div class="header-content">
-      <h1 class="item-title">{{ item()!.title }}</h1>
-      <span class="item-level">Niveau {{ item()!.level }}</span>
+      @if (item()!.icon_gfx_id) {
+      <div class="item-icon">
+        <img [src]="getItemImageUrl(item()!.icon_gfx_id)" [alt]="cleanText(item()!.title)" />
+      </div>
+      }
+      <div class="title-row">
+        <h1 class="item-title">{{ cleanText(item()!.title) }}</h1>
+        <span class="item-level">Niv. {{ item()!.level }}</span>
+      </div>
+      <div class="header-meta">
+        <span class="rarity-badge" [class]="'rarity-' + getRarityClass(item()!.rarity)">
+          {{ getRarityLabel(item()!.rarity) }}
+        </span>
+        @if (item()!.equipment_type) {
+        <span class="equipment-badge">{{ cleanText(item()!.equipment_type?.title) }}</span>
+        } @else if (item()!.item_type) {
+        <span class="type-badge">{{ cleanText(item()!.item_type?.title) }}</span>
+        }
+      </div>
     </div>
   </header>
 
   <div class="item-content">
-    <section class="item-main-info">
-      <div class="info-grid">
-        <div class="info-card">
-          <label>Type</label>
-          <span>{{ item()!.item_type_title || 'Item' }}</span>
-        </div>
-
-        <div class="info-card">
-          <label>Rareté</label>
-          <span [class]="'rarity-' + getRarityClass(item()!.rarity)">
-            {{ getRarityLabel(item()!.rarity) }}
-          </span>
-        </div>
-
-        <div class="info-card">
-          <label>ID Wakfu</label>
-          <span>{{ item()!.wakfu_id }}</span>
-        </div>
-
-        <div class="info-card">
-          <label>Niveau requis</label>
-          <span>{{ item()!.level }}</span>
-        </div>
-      </div>
-
+    <!-- Colonne principale -->
+    <div class="main-column">
+      <!-- Description -->
       @if (item()!.description) {
-      <div class="description-section">
-        <h3>Description</h3>
-        <p>{{ item()!.description }}</p>
-      </div>
+      <section class="card description-card">
+        <h2>📝 Description</h2>
+        <p class="description-text">{{ cleanText(item()!.description) }}</p>
+      </section>
       }
-    </section>
 
-    @if (item()!.recipes_using && item()!.recipes_using.length > 0) {
-    <section class="recipes-section">
-      <h2>Utilisé dans {{ item()!.recipes_using.length }} recette(s)</h2>
-      <div class="recipes-grid">
-        @for (recipe of item()!.recipes_using; track recipe.wakfu_id) {
-        <div class="recipe-card">
-          <h4>Recette #{{ recipe.wakfu_id }} (Niv. {{ recipe.level }})</h4>
-          <span class="recipe-level">Niv. {{ recipe.level }}</span>
+      <!-- Propriétés spéciales -->
+      @if (item()!.properties && item()!.properties!.length > 0) {
+      <section class="card properties-card">
+        <h2>✨ Propriétés spéciales</h2>
+        <div class="properties-list">
+          @for (prop of item()!.properties; track prop.wakfu_id) {
+          <div class="property-item">
+            <span class="property-icon">🔸</span>
+            @if (isExclusiveProperty(prop.wakfu_id)) {
+            <span class="property-name">{{ getExclusivePropertyLabel(prop.wakfu_id) }}</span>
+            <span class="property-desc">{{ getExclusivePropertyDescription() }}</span>
+            } @else {
+            <span class="property-name">{{ cleanText(prop.name) }}</span>
+            @if (prop.description) {
+            <span class="property-desc">{{ cleanText(prop.description) }}</span>
+            } }
+          </div>
+          }
         </div>
-        }
-      </div>
-    </section>
-    }
+      </section>
+      }
+
+      <!-- Statistiques d'équipement -->
+      @if (getStatisticsArray().length > 0) {
+      <section class="card stats-card">
+        <h2>📊 Statistiques</h2>
+        <div class="stats-grid">
+          @for (stat of getStatisticsArray(); track stat.key) {
+          <div class="stat-item">
+            <span class="stat-label">{{ stat.stat.label }}</span>
+            <span
+              class="stat-value"
+              [class.positive]="stat.stat.value > 0"
+              [class.negative]="stat.stat.value < 0"
+            >
+              {{ formatStatValue(stat.stat) }}
+            </span>
+          </div>
+          }
+        </div>
+      </section>
+      }
+
+      <!-- Effets d'utilisation -->
+      @if (item()!.use_effects_enriched && item()!.use_effects_enriched!.length > 0) {
+      <section class="card effects-card">
+        <h2>⚡ Effets d'utilisation</h2>
+        <div class="effects-list">
+          @for (effect of item()!.use_effects_enriched; track $index) {
+          <div class="effect-item">
+            @if (effect.action?.description) {
+            <p class="effect-desc">{{ cleanText(effect.action?.description) }}</p>
+            } @if (effect.params && effect.params.length > 0) {
+            <span class="effect-params">Paramètres: {{ effect.params.join(', ') }}</span>
+            }
+          </div>
+          }
+        </div>
+      </section>
+      }
+
+      <!-- Effets critiques -->
+      @if (item()!.use_critical_effects_enriched && item()!.use_critical_effects_enriched!.length >
+      0) {
+      <section class="card effects-card critical">
+        <h2>💥 Effets critiques</h2>
+        <div class="effects-list">
+          @for (effect of item()!.use_critical_effects_enriched; track $index) {
+          <div class="effect-item">
+            @if (effect.action?.description) {
+            <p class="effect-desc">{{ cleanText(effect.action?.description) }}</p>
+            }
+          </div>
+          }
+        </div>
+      </section>
+      }
+
+      <!-- Job Item -->
+      @if (item()!.job_item) {
+      <section class="card job-card">
+        <h2>🛠️ Item de métier</h2>
+        <div class="job-info">
+          <span class="job-type">{{ getJobTypeName(item()!.job_item) }}</span>
+          @if (item()!.job_item!.harvest_skill_id) {
+          <span class="job-detail">ID Compétence: {{ item()!.job_item!.harvest_skill_id }}</span>
+          }
+        </div>
+      </section>
+      }
+    </div>
+
+    <!-- Colonne latérale -->
+    <aside class="sidebar-column">
+      <!-- Infos techniques -->
+      <section class="card info-card">
+        <h2>ℹ️ Informations</h2>
+        <div class="info-list">
+          <div class="info-row">
+            <span class="info-label">ID Wakfu</span>
+            <span class="info-value">{{ item()!.wakfu_id }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Niveau</span>
+            <span class="info-value">{{ item()!.level }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Rareté</span>
+            <span class="info-value" [class]="'rarity-' + getRarityClass(item()!.rarity)">
+              {{ getRarityLabel(item()!.rarity) }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recettes qui produisent cet item -->
+      @if (item()!.produced_by_recipes && item()!.produced_by_recipes!.length > 0) {
+      <section class="card recipes-card">
+        <h2>🔨 Crafté par</h2>
+        <div class="recipes-list">
+          @for (recipe of item()!.produced_by_recipes; track recipe.wakfu_id) {
+          <a [routerLink]="['/recipes', recipe.wakfu_id]" class="recipe-item">
+            <div class="recipe-header">
+              <span class="recipe-id">#{{ recipe.wakfu_id }}</span>
+              <span class="recipe-level">Niv. {{ recipe.level }}</span>
+            </div>
+            @if (recipe.category) {
+            <span class="recipe-category">{{ recipe.category.name }}</span>
+            } @if (recipe.quantity_produced) {
+            <span class="recipe-quantity">Produit {{ recipe.quantity_produced }}x</span>
+            }
+          </a>
+          }
+        </div>
+      </section>
+      }
+
+      <!-- Recettes qui utilisent cet item -->
+      @if (item()!.used_in_recipes && item()!.used_in_recipes!.length > 0) {
+      <section class="card recipes-card">
+        <h2>🧩 Utilisé dans</h2>
+        <p class="recipe-count">{{ item()!.used_in_recipes!.length }} recette(s)</p>
+        <div class="recipes-list">
+          @for (recipe of item()!.used_in_recipes; track recipe.wakfu_id) {
+          <a [routerLink]="['/recipes', recipe.wakfu_id]" class="recipe-item">
+            <div class="recipe-header">
+              <span class="recipe-id">#{{ recipe.wakfu_id }}</span>
+              <span class="recipe-level">Niv. {{ recipe.level }}</span>
+            </div>
+            @if (recipe.category) {
+            <span class="recipe-category">{{ recipe.category.name }}</span>
+            } @if (recipe.quantity_needed) {
+            <span class="recipe-quantity">{{ recipe.quantity_needed }}x requis</span>
+            }
+          </a>
+          }
+        </div>
+      </section>
+      }
+    </aside>
   </div>
   }
 </div>

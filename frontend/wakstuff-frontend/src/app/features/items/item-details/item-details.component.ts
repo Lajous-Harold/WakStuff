@@ -1,15 +1,24 @@
 import { Component, OnInit, ChangeDetectionStrategy, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Location, CommonModule } from '@angular/common';
 import { ItemsService } from '../../../core/services/items.service';
 import { ImportStatusService } from '../../../core/services/import-status.service';
 import { ItemDetail } from '../../../core/models';
 import { LoadingSpinnerComponent, ErrorMessageComponent } from '../../../shared/components';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { cleanWakfuText, getRarityColorClass } from '../../../shared/utils';
+import { environment } from '../../../core/config';
 
 @Component({
   selector: 'app-item-details',
   standalone: true,
-  imports: [LoadingSpinnerComponent, ErrorMessageComponent, EmptyStateComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    LoadingSpinnerComponent,
+    ErrorMessageComponent,
+    EmptyStateComponent,
+  ],
   templateUrl: './item-details.component.html',
   styleUrl: './item-details.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +32,7 @@ export class ItemDetailsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private location: Location,
     private itemsService: ItemsService,
     private importStatusService: ImportStatusService
   ) {}
@@ -58,8 +68,8 @@ export class ItemDetailsComponent implements OnInit {
     this.error.set(null);
 
     this.itemsService.getItemDetail(wakfuId).subscribe({
-      next: (item) => {
-        this.item.set(item);
+      next: (response) => {
+        this.item.set(response.item);
         this.hasData.set(true);
         this.loading.set(false);
       },
@@ -77,34 +87,98 @@ export class ItemDetailsComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/items']);
+    // Utiliser location.back() pour retourner à la page précédente avec son état
+    this.location.back();
   }
 
   getRarityClass(rarity: number): string {
     const rarities = [
-      'common',
-      'common',
-      'unusual',
-      'rare',
-      'mythical',
-      'legendary',
-      'relic',
-      'souvenir',
+      'common', // 0 - Ancien objet (blanc)
+      'unusual', // 1 - Inhabituel (blanc)
+      'rare', // 2 - Rare (cyan)
+      'mythical', // 3 - Mythique (orange)
+      'legendary', // 4 - Légendaire (jaune)
+      'relic', // 5 - Relique (violet) - property 8
+      'souvenir', // 6 - Souvenir (cyan)
+      'epic', // 7 - Épique (rose) - property 12
     ];
     return rarities[rarity] || 'common';
   }
 
   getRarityLabel(rarity: number): string {
     const labels = [
-      'Commun',
-      'Commun',
-      'Inhabituel',
-      'Rare',
-      'Mythique',
-      'Légendaire',
-      'Relique',
-      'Souvenir',
+      'Ancien objet', // 0 - Blanc
+      'Inhabituel', // 1 - Blanc
+      'Rare', // 2 - Cyan
+      'Mythique', // 3 - Orange
+      'Légendaire', // 4 - Jaune
+      'Relique', // 5 - Violet (property 8)
+      'Souvenir', // 6 - Cyan
+      'Épique', // 7 - Rose (property 12)
     ];
     return labels[rarity] || 'Commun';
+  }
+
+  getItemImageUrl(iconGfxId: number | undefined): string {
+    if (!iconGfxId) return '';
+    // Utiliser le proxy backend pour éviter les problèmes CORS avec le CDN Ankama
+    return `${environment.apiUrl}/proxy/icon/${iconGfxId}`;
+  }
+
+  cleanText(text: string | null | undefined): string {
+    return cleanWakfuText(text);
+  }
+
+  isExclusiveProperty(wakfuId: number): boolean {
+    // Properties 8 et 12 sont les propriétés exclusives (Relique/Épique)
+    return wakfuId === 8 || wakfuId === 12;
+  }
+
+  getExclusivePropertyLabel(wakfuId: number): string {
+    if (wakfuId === 8) return 'Item Relique Exclusif';
+    if (wakfuId === 12) return 'Item Épique Exclusif';
+    return '';
+  }
+
+  getExclusivePropertyDescription(): string {
+    return "Il ne peut y avoir qu'un seul item ayant cette propriété équipé à la fois.";
+  }
+
+  getStatisticsArray(): {
+    key: string;
+    stat: { label: string; value: number; action_id: number };
+  }[] {
+    const item = this.item();
+    if (!item?.statistics) return [];
+
+    return Object.entries(item.statistics).map(([key, stat]) => ({ key, stat }));
+  }
+
+  formatStatValue(stat: { value: number; action_id: number }): string {
+    // Les actionIds en pourcentage
+    const percentageActions = [149, 875]; // CritChance, BlockPercent
+
+    if (percentageActions.includes(stat.action_id)) {
+      return `${stat.value > 0 ? '+' : ''}${stat.value} %`;
+    }
+
+    return `${stat.value > 0 ? '+' : ''}${stat.value}`;
+  }
+
+  getJobTypeName(jobItem: any): string {
+    if (jobItem.harvest_skill_id) {
+      const skills: { [key: number]: string } = {
+        64: 'Paysan',
+        71: 'Forestier',
+        72: 'Herboriste',
+        73: 'Mineur',
+        75: 'Pêcheur',
+      };
+      return skills[jobItem.harvest_skill_id] || 'Métier de récolte';
+    }
+    if (jobItem.craft_skill_id) {
+      return 'Métier de craft';
+    }
+    return 'Item de métier';
   }
 }
