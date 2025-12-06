@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output, signal, effect, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -22,9 +22,7 @@ import { FormsModule } from '@angular/forms';
         }
       </div>
 
-      @if (showSearchButton()) {
       <button class="search-button" (click)="onSearch()">Rechercher</button>
-      }
     </div>
   `,
   styles: [
@@ -105,30 +103,51 @@ import { FormsModule } from '@angular/forms';
 })
 export class SearchBarComponent {
   placeholder = input<string>('Rechercher...');
-  debounceTime = input<number>(300);
-  showSearchButton = input<boolean>(false);
+  debounceTime = input<number>(500);
+  value = model<string>(''); // Two-way binding avec le parent
 
   search = output<string>();
 
   searchQuery = signal<string>('');
   private debounceTimeout: any;
+  private isTyping = false;
+
+  constructor() {
+    // Synchroniser searchQuery avec value seulement si ce n'est pas l'utilisateur qui tape
+    effect(() => {
+      if (!this.isTyping) {
+        const parentValue = this.value();
+        this.searchQuery.set(parentValue || '');
+      }
+    });
+  }
 
   onSearchInput(): void {
-    if (this.debounceTime() > 0) {
-      clearTimeout(this.debounceTimeout);
-      this.debounceTimeout = setTimeout(() => {
-        this.search.emit(this.searchQuery());
-      }, this.debounceTime());
-    }
+    // Recherche dynamique avec debounce
+    this.isTyping = true;
+    clearTimeout(this.debounceTimeout);
+    this.debounceTimeout = setTimeout(() => {
+      const query = this.searchQuery().trim();
+      this.value.set(query);
+      this.search.emit(query);
+      this.isTyping = false;
+    }, this.debounceTime());
   }
 
   onSearch(): void {
+    // Recherche immédiate (Enter ou bouton)
+    this.isTyping = false;
     clearTimeout(this.debounceTimeout);
-    this.search.emit(this.searchQuery());
+    const query = this.searchQuery().trim();
+    this.value.set(query);
+    this.search.emit(query);
   }
 
   clearSearch(): void {
+    this.isTyping = false;
+    clearTimeout(this.debounceTimeout);
     this.searchQuery.set('');
+    this.value.set('');
     this.search.emit('');
   }
 }
