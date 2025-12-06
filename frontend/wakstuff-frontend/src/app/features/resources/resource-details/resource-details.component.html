@@ -1,0 +1,76 @@
+<div class="resource-details-page">
+  @if (loading()) {
+  <app-loading-spinner message="Chargement de la ressource..." />
+  } @else if (error() && !hasData()) {
+  <app-empty-state
+    icon="🌾"
+    title="Ressource non disponible"
+    message="Aucune donnée n'a été importée. Veuillez d'abord importer les données depuis la page d'imports."
+  />
+  } @else if (error()) {
+  <app-error-message [message]="error()!" type="error" />
+  <button class="btn-back" (click)="goBack()">← Retour à la liste</button>
+  } @else if (resource()) {
+  <header class="page-header">
+    <button class="btn-back" (click)="goBack()">← Retour</button>
+    <div class="header-content">
+      <h1 class="resource-title">{{ resource()!.title }}</h1>
+      <span class="resource-level">Niveau {{ resource()!.level }}</span>
+    </div>
+  </header>
+
+  <div class="resource-content">
+    <section class="resource-main-info">
+      <div class="info-grid">
+        <div class="info-card">
+          <label>Type</label>
+          <span>{{ resource()!.type_name }}</span>
+        </div>
+
+        <div class="info-card">
+          <label>ID Wakfu</label>
+          <span>{{ resource()!.wakfu_id }}</span>
+        </div>
+
+        <div class="info-card">
+          <label>Niveau</label>
+          <span>{{ resource()!.level }}</span>
+        </div>
+      </div>
+
+      @if (resource()!.description) {
+      <div class="description-section">
+        <h3>Description</h3>
+        <p>{{ resource()!.description }}</p>
+      </div>
+      }
+    </section>
+
+    @if (resource()!.used_in_recipes && (resource()!.used_in_recipes?.length ?? 0) > 0) {
+    <section class="recipes-section">
+      <h2>Utilisé dans {{ resource()!.used_in_recipes?.length }} recette(s)</h2>
+      <div class="recipes-grid">
+        @for (recipe of resource()!.used_in_recipes; track recipe.wakfu_id) {
+        <div class="recipe-card">
+          <h4>{{ recipe.title }}</h4>
+          <span class="recipe-level">Niv. {{ recipe.level }}</span>
+        </div>
+        }
+      </div>
+    </section>
+    } @if (resource()!.harvest_loots && resource()!.harvest_loots.length > 0) {
+    <section class="harvest-section">
+      <h2>Récolte</h2>
+      <div class="harvest-grid">
+        @for (loot of resource()!.harvest_loots; track loot.item_wakfu_id) {
+        <div class="harvest-card">
+          <span class="harvest-item">{{ loot.item_title }}</span>
+          <span class="harvest-quantity">Qté: {{ loot.quantity }}</span>
+        </div>
+        }
+      </div>
+    </section>
+    }
+  </div>
+  }
+</div>

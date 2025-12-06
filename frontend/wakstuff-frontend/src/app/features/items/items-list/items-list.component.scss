@@ -1,0 +1,182 @@
+.items-list-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    h1 {
+      font-size: 2rem;
+      color: #333;
+      margin: 0;
+    }
+
+    .header-stats {
+      .stat {
+        background: #f8f9fa;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        color: #666;
+      }
+    }
+  }
+
+  .filters-section {
+    margin-bottom: 2rem;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #999;
+    font-size: 1.1rem;
+  }
+
+  .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .item-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-left: 4px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    &.rarity-common {
+      border-left-color: #95a5a6;
+    }
+
+    &.rarity-unusual {
+      border-left-color: #3498db;
+    }
+
+    &.rarity-rare {
+      border-left-color: #9b59b6;
+    }
+
+    &.rarity-mythical {
+      border-left-color: #e74c3c;
+    }
+
+    &.rarity-legendary {
+      border-left-color: #f39c12;
+    }
+
+    &.rarity-relic {
+      border-left-color: #16a085;
+    }
+
+    &.rarity-souvenir {
+      border-left-color: #e67e22;
+    }
+
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+      gap: 1rem;
+
+      .item-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+        flex: 1;
+      }
+
+      .item-level {
+        background: #f8f9fa;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #666;
+        white-space: nowrap;
+      }
+    }
+
+    .item-meta {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+
+      .item-type {
+        font-size: 0.85rem;
+        color: #666;
+        background: #f8f9fa;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+      }
+
+      .item-rarity {
+        font-size: 0.85rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 500;
+
+        &.rarity-common {
+          background: #ecf0f1;
+          color: #7f8c8d;
+        }
+
+        &.rarity-unusual {
+          background: #ebf5fb;
+          color: #2980b9;
+        }
+
+        &.rarity-rare {
+          background: #f4ecf7;
+          color: #8e44ad;
+        }
+
+        &.rarity-mythical {
+          background: #fadbd8;
+          color: #c0392b;
+        }
+
+        &.rarity-legendary {
+          background: #fef5e7;
+          color: #d68910;
+        }
+
+        &.rarity-relic {
+          background: #d5f4e6;
+          color: #117a65;
+        }
+
+        &.rarity-souvenir {
+          background: #fdebd0;
+          color: #ca6f1e;
+        }
+      }
+    }
+
+    .item-description {
+      font-size: 0.9rem;
+      color: #666;
+      line-height: 1.5;
+      margin: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+}

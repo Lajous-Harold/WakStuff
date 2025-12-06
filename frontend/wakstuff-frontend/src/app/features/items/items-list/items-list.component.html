@@ -1,0 +1,69 @@
+<div class="items-list-page">
+  <header class="page-header">
+    <h1>Items</h1>
+    <div class="header-stats">
+      <span class="stat">{{ totalItems() }} items</span>
+    </div>
+  </header>
+
+  <div class="filters-section">
+    <app-search-bar
+      placeholder="Rechercher un item..."
+      [debounceTime]="500"
+      (search)="onSearch($event)"
+    />
+  </div>
+
+  @if (loading()) {
+  <app-loading-spinner message="Chargement des items..." />
+  } @else if (error()) {
+  <app-error-message
+    [message]="error()!"
+    type="error"
+    [dismissible]="true"
+    (dismiss)="loadItems()"
+  />
+  } @else if (!hasData()) {
+  <app-empty-state
+    icon="📦"
+    title="Aucun item disponible"
+    message="Aucun import n'a encore été effectué. Veuillez importer les données depuis la page d'imports pour commencer."
+  />
+  } @else { @if (items().length === 0) {
+  <div class="no-results">
+    <p>Aucun item trouvé avec ces critères</p>
+  </div>
+  } @else {
+  <div class="items-grid">
+    @for (item of items(); track item.wakfu_id) {
+    <div
+      class="item-card"
+      [class]="'rarity-' + getRarityClass(item.rarity)"
+      (click)="viewDetails(item.wakfu_id)"
+    >
+      <div class="item-header">
+        <h3 class="item-title">{{ item.title }}</h3>
+        <span class="item-level">Niv. {{ item.level }}</span>
+      </div>
+
+      <div class="item-meta">
+        <span class="item-type">{{ item.item_type_title || 'Item' }}</span>
+        <span class="item-rarity" [class]="'rarity-' + getRarityClass(item.rarity)">
+          {{ getRarityLabel(item.rarity) }}
+        </span>
+      </div>
+
+      @if (item.description) {
+      <p class="item-description">{{ item.description }}</p>
+      }
+    </div>
+    }
+  </div>
+
+  <app-pagination
+    [config]="paginationConfig()"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+  />
+  } }
+</div>

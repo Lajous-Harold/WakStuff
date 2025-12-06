@@ -1,0 +1,71 @@
+<div class="item-details-page">
+  @if (loading()) {
+  <app-loading-spinner message="Chargement de l'item..." />
+  } @else if (error() && !hasData()) {
+  <app-empty-state
+    icon="📦"
+    title="Item non disponible"
+    message="Aucune donnée n'a été importée. Veuillez d'abord importer les données depuis la page d'imports."
+  />
+  } @else if (error()) {
+  <app-error-message [message]="error()!" type="error" />
+  <button class="btn-back" (click)="goBack()">← Retour à la liste</button>
+  } @else if (item()) {
+  <header class="page-header">
+    <button class="btn-back" (click)="goBack()">← Retour</button>
+    <div class="header-content">
+      <h1 class="item-title">{{ item()!.title }}</h1>
+      <span class="item-level">Niveau {{ item()!.level }}</span>
+    </div>
+  </header>
+
+  <div class="item-content">
+    <section class="item-main-info">
+      <div class="info-grid">
+        <div class="info-card">
+          <label>Type</label>
+          <span>{{ item()!.item_type_title || 'Item' }}</span>
+        </div>
+
+        <div class="info-card">
+          <label>Rareté</label>
+          <span [class]="'rarity-' + getRarityClass(item()!.rarity)">
+            {{ getRarityLabel(item()!.rarity) }}
+          </span>
+        </div>
+
+        <div class="info-card">
+          <label>ID Wakfu</label>
+          <span>{{ item()!.wakfu_id }}</span>
+        </div>
+
+        <div class="info-card">
+          <label>Niveau requis</label>
+          <span>{{ item()!.level }}</span>
+        </div>
+      </div>
+
+      @if (item()!.description) {
+      <div class="description-section">
+        <h3>Description</h3>
+        <p>{{ item()!.description }}</p>
+      </div>
+      }
+    </section>
+
+    @if (item()!.recipes_using && item()!.recipes_using.length > 0) {
+    <section class="recipes-section">
+      <h2>Utilisé dans {{ item()!.recipes_using.length }} recette(s)</h2>
+      <div class="recipes-grid">
+        @for (recipe of item()!.recipes_using; track recipe.wakfu_id) {
+        <div class="recipe-card">
+          <h4>Recette #{{ recipe.wakfu_id }} (Niv. {{ recipe.level }})</h4>
+          <span class="recipe-level">Niv. {{ recipe.level }}</span>
+        </div>
+        }
+      </div>
+    </section>
+    }
+  </div>
+  }
+</div>

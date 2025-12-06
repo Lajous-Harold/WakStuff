@@ -1,0 +1,160 @@
+<div class="dashboard">
+  @if (loading()) {
+  <app-loading-spinner message="Chargement du tableau de bord..." />
+  } @else if (error()) {
+  <app-error-message
+    [message]="error()!"
+    type="error"
+    [dismissible]="true"
+    (dismiss)="loadDashboard()"
+  />
+  } @else if (!hasData()) {
+  <app-empty-state
+    icon="🏠"
+    title="Bienvenue sur WakStuff"
+    message="Aucune donnée n'est encore disponible. Commencez par importer les données Wakfu depuis la page d'imports."
+  />
+  } @else {
+  <!-- Search Section -->
+  <section class="search-section">
+    <h1>Recherche Globale</h1>
+    <app-search-bar
+      placeholder="Rechercher un item, une recette ou une ressource..."
+      [debounceTime]="500"
+      (search)="onSearch($event)"
+    />
+
+    @if (searching()) {
+    <app-loading-spinner [inline]="true" [size]="24" />
+    } @if (searchResults()) {
+    <div class="search-results">
+      @if (searchResults()!.items.length > 0) {
+      <div class="results-section">
+        <h3>Items ({{ searchResults()!.items.length }})</h3>
+        <div class="results-list">
+          @for (item of searchResults()!.items; track item.wakfu_id) {
+          <div class="result-item" (click)="navigateTo('item', item.wakfu_id)">
+            <span class="result-name">{{ item.title }}</span>
+            <span class="result-level">Niv. {{ item.level }}</span>
+          </div>
+          }
+        </div>
+      </div>
+      } @if (searchResults()!.recipes.length > 0) {
+      <div class="results-section">
+        <h3>Recettes ({{ searchResults()!.recipes.length }})</h3>
+        <div class="results-list">
+          @for (recipe of searchResults()!.recipes; track recipe.wakfu_id) {
+          <div class="result-item" (click)="navigateTo('recipe', recipe.wakfu_id)">
+            <span class="result-name">Recette #{{ recipe.wakfu_id }}</span>
+            <span class="result-level">Niv. {{ recipe.level }}</span>
+          </div>
+          }
+        </div>
+      </div>
+      } @if (searchResults()!.resources.length > 0) {
+      <div class="results-section">
+        <h3>Ressources ({{ searchResults()!.resources.length }})</h3>
+        <div class="results-list">
+          @for (resource of searchResults()!.resources; track resource.wakfu_id) {
+          <div class="result-item" (click)="navigateTo('resource', resource.wakfu_id)">
+            <span class="result-name">{{ resource.title }}</span>
+            <span class="result-level">Niv. {{ resource.level }}</span>
+          </div>
+          }
+        </div>
+      </div>
+      } @if (searchResults()!.items.length === 0 && searchResults()!.recipes.length === 0 &&
+      searchResults()!.resources.length === 0) {
+      <p class="no-results">Aucun résultat trouvé</p>
+      }
+    </div>
+    }
+  </section>
+
+  <!-- Stats Section -->
+  @if (stats()) {
+  <section class="stats-section">
+    <h2>Statistiques Générales</h2>
+    <div class="stats-grid">
+      <app-stat-card label="Items" [value]="stats()!.total_items" icon="🎒" variant="primary" />
+
+      <app-stat-card
+        label="Recettes"
+        [value]="stats()!.total_recipes"
+        icon="📜"
+        variant="success"
+      />
+
+      <app-stat-card
+        label="Ressources"
+        [value]="stats()!.total_resources"
+        icon="⛏️"
+        variant="warning"
+      />
+
+      <app-stat-card label="Métiers" [value]="stats()!.total_job_items" icon="🔨" variant="info" />
+    </div>
+  </section>
+  }
+
+  <!-- Recent Imports Section -->
+  @if (recentImports().length > 0) {
+  <section class="imports-section">
+    <div class="section-header">
+      <h2>Imports Récents</h2>
+      <button class="btn-link" (click)="goToPage('imports')">Voir tout →</button>
+    </div>
+
+    <div class="imports-list">
+      @for (batch of recentImports(); track batch.id) {
+      <div class="import-card">
+        <div class="import-date">
+          {{ batch.timestamp | date : 'dd/MM/yyyy HH:mm' }}
+        </div>
+        <div class="import-details">
+          <span>{{ batch.total_entries }} entrées</span>
+        </div>
+      </div>
+      }
+    </div>
+  </section>
+  }
+
+  <!-- Quick Access Section -->
+  <section class="quick-access-section">
+    <h2>Accès Rapide</h2>
+    <div class="quick-access-grid">
+      <button class="quick-access-btn" (click)="goToPage('items')">
+        <span class="btn-icon">🎒</span>
+        <span class="btn-label">Items</span>
+      </button>
+
+      <button class="quick-access-btn" (click)="goToPage('craft')">
+        <span class="btn-icon">⚒️</span>
+        <span class="btn-label">Calculateur Craft</span>
+      </button>
+
+      <button class="quick-access-btn" (click)="goToPage('resources')">
+        <span class="btn-icon">⛏️</span>
+        <span class="btn-label">Ressources</span>
+      </button>
+
+      <button class="quick-access-btn" (click)="goToPage('jobs')">
+        <span class="btn-icon">🔨</span>
+        <span class="btn-label">Métiers & XP</span>
+      </button>
+
+      <button class="quick-access-btn" (click)="goToPage('favorites')">
+        <span class="btn-icon">⭐</span>
+        <span class="btn-label">Favoris</span>
+      </button>
+
+      <button class="quick-access-btn" (click)="goToPage('imports')">
+        <span class="btn-icon">📥</span>
+        <span class="btn-label">Imports</span>
+      </button>
+    </div>
+  </section>
+  }
+</div>

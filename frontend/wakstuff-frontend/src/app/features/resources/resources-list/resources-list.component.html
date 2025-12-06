@@ -1,0 +1,62 @@
+<div class="resources-list-page">
+  <header class="page-header">
+    <h1>Ressources</h1>
+    <div class="header-stats">
+      <span class="stat">{{ totalItems() }} ressources</span>
+    </div>
+  </header>
+
+  <div class="filters-section">
+    <app-search-bar
+      placeholder="Rechercher une ressource..."
+      [debounceTime]="500"
+      (search)="onSearch($event)"
+    />
+  </div>
+
+  @if (loading()) {
+  <app-loading-spinner message="Chargement des ressources..." />
+  } @else if (error()) {
+  <app-error-message
+    [message]="error()!"
+    type="error"
+    [dismissible]="true"
+    (dismiss)="loadResources()"
+  />
+  } @else if (!hasData()) {
+  <app-empty-state
+    icon="🌾"
+    title="Aucune ressource disponible"
+    message="Aucun import n'a encore été effectué. Veuillez importer les données depuis la page d'imports pour commencer."
+  />
+  } @else { @if (resources().length === 0) {
+  <div class="no-results">
+    <p>Aucune ressource trouvée avec ces critères</p>
+  </div>
+  } @else {
+  <div class="resources-grid">
+    @for (resource of resources(); track resource.wakfu_id) {
+    <div class="resource-card" (click)="viewDetails(resource.wakfu_id)">
+      <div class="resource-header">
+        <h3 class="resource-title">{{ resource.title }}</h3>
+        <span class="resource-level">Niv. {{ resource.level }}</span>
+      </div>
+
+      <div class="resource-meta">
+        <span class="resource-type">{{ resource.type_name }}</span>
+      </div>
+
+      @if (resource.description) {
+      <p class="resource-description">{{ resource.description }}</p>
+      }
+    </div>
+    }
+  </div>
+
+  <app-pagination
+    [config]="paginationConfig()"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+  />
+  } }
+</div>

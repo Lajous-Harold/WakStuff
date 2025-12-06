@@ -1,0 +1,111 @@
+<div class="imports-dashboard">
+  <header class="page-header">
+    <h1>Importation des données Wakfu</h1>
+    <p class="subtitle">Importer toutes les données depuis l'API Wakfu officielle</p>
+  </header>
+
+  <div class="import-section">
+    @if (!importing() && !importResult()) {
+    <div class="import-card start">
+      <h2>Prêt à importer</h2>
+      <p>
+        Cette action va importer toutes les données Wakfu (items, recettes, ressources, métiers)
+        depuis l'API officielle.
+      </p>
+
+      <button class="btn-import" (click)="startImport()">🚀 Lancer l'importation</button>
+    </div>
+    } @if (importing()) {
+    <div class="import-card importing">
+      <app-loading-spinner message="Importation en cours..." [size]="60" />
+
+      <div class="import-phases">
+        <h3>Progression</h3>
+        <div class="phases-list">
+          <div class="phase">
+            <span class="phase-icon">{{ getPhaseIcon('phase1') }}</span>
+            <span class="phase-label">Phase 1: Métadonnées</span>
+          </div>
+          <div class="phase">
+            <span class="phase-icon">{{ getPhaseIcon('phase2') }}</span>
+            <span class="phase-label">Phase 2: Items & Ressources</span>
+          </div>
+          <div class="phase">
+            <span class="phase-icon">{{ getPhaseIcon('phase3') }}</span>
+            <span class="phase-label">Phase 3: Recettes</span>
+          </div>
+          <div class="phase">
+            <span class="phase-icon">{{ getPhaseIcon('phase4') }}</span>
+            <span class="phase-label">Phase 4: Relations</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    } @if (importResult() && !importing()) {
+    <div class="import-card success">
+      <h2>✅ Importation terminée</h2>
+
+      <div class="import-stats">
+        <h3>Statistiques</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <label>Items</label>
+            <span>{{ importResult()!.grand_total }}</span>
+          </div>
+          <div class="stat-item">
+            <label>Phase 1</label>
+            <span>{{ importResult()!.phase_1_total }}</span>
+          </div>
+          <div class="stat-item">
+            <label>Phase 2</label>
+            <span>{{ importResult()!.phase_2_total }}</span>
+          </div>
+          <div class="stat-item">
+            <label>Phase 3</label>
+            <span>{{ importResult()!.phase_3_total }}</span>
+          </div>
+          <div class="stat-item">
+            <label>Phase 4</label>
+            <span>{{ importResult()!.phase_4_total }}</span>
+          </div>
+          <div class="stat-item">
+            <label>Durée totale</label>
+            <span>{{ importResult()!.timing.total }}s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="import-phases">
+        <h3>Phases complétées</h3>
+        <div class="phases-list">
+          <div class="phase success">
+            <span class="phase-icon">✓</span>
+            <span class="phase-label">Phase 1: Métadonnées</span>
+          </div>
+          <div class="phase success">
+            <span class="phase-icon">✓</span>
+            <span class="phase-label">Phase 2: Items & Ressources</span>
+          </div>
+          <div class="phase success">
+            <span class="phase-icon">✓</span>
+            <span class="phase-label">Phase 3: Recettes</span>
+          </div>
+          <div class="phase success">
+            <span class="phase-icon">✓</span>
+            <span class="phase-label">Phase 4: Relations</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-reimport" (click)="startImport()">🔄 Réimporter</button>
+    </div>
+    } @if (error()) {
+    <app-error-message
+      [message]="error()!"
+      type="error"
+      [dismissible]="true"
+      (dismiss)="error.set(null)"
+    />
+    }
+  </div>
+</div>
