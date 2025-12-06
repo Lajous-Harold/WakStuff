@@ -17,3 +17,9 @@ frontend/wakstuff-frontend/dist/
 
 # Docker
 db_data/
+
+# Sandbox
+sandbox/
+
+# Temp files
+temp-session/

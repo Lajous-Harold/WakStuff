@@ -1,6 +1,157 @@
 # TODO - WakStuff
 
-## Phase 1: Setup Initial ✅ TERMINÉ
+## 📚 Documentation Disponible
+
+**Avant de commencer une tâche, consultez la documentation de refonte :**
+
+- **[INDEX.md](./INDEX.md)** - Guide de navigation et vue d'ensemble
+- **[SYNTHESE.md](./SYNTHESE.md)** - Synthèse visuelle de l'avancement
+- **[REFONTE_PLAN.md](./REFONTE_PLAN.md)** - Plan détaillé étape par étape
+- **[ANALYSE_JSON.md](./ANALYSE_JSON.md)** - Détails des données JSON
+- **[SCHEMA_BDD.md](./SCHEMA_BDD.md)** - Schéma de base de données
+
+---
+
+## 🎯 Phase Actuelle : FRONTEND FINALIZATION (Phase 3)
+
+### 📊 Progression : [█████████████████-] 85%
+
+### ✅ Complété
+
+- [x] Backend Flask - 75% (routes principales OK)
+- [x] Services Angular - 100% (Items, Recipes, Imports, WakfuData)
+- [x] Composants principaux - 100% (Dashboard, Items, Craft, Imports, Resources)
+- [x] Résolution de 64 erreurs de compilation TypeScript
+- [x] Alignement des modèles frontend/backend
+- [x] Création du blueprint stats avec 3 endpoints
+
+### 🔜 En cours (Prochaines 48h)
+
+- [ ] **Tests de compilation Angular** (Priorité 1)
+
+  - [ ] Vérifier que les 64 erreurs sont résolues
+  - [ ] Test `ng build --configuration production`
+  - [ ] Validation TypeScript stricte
+
+- [ ] **Tests des endpoints backend** (Priorité 1)
+
+  - [ ] Test `/api/stats/overview`
+  - [ ] Test `/api/search/global`
+  - [ ] Test `/api/imports/recent`
+  - [ ] Test `/api/recipes/craft-tree/<id>`
+
+- [ ] **Documentation finale** (Priorité 2)
+  - [x] Mise à jour TODO.md
+  - [ ] Mise à jour FRONTEND_SPEC.md
+  - [ ] Mise à jour BACKEND_ENDPOINTS_TODO.md
+  - [ ] Capture d'écran des pages
+
+---
+
+## 📅 Roadmap Détaillée
+
+### Phase 1: Base de Données (2-3 jours) - TERMINÉ
+
+**Progression : 100%**
+
+- [x] Analyse des données JSON
+- [x] Conception du schéma BDD
+- [x] Création des migrations SQL
+- [x] Script d'import Python
+- [x] Import des données
+- [x] Validation et tests
+- [x] Optimisation (index, vues)
+
+### Phase 2: Backend Flask (4-5 jours) - EN COURS
+
+**Progression : 75%**
+
+- [x] Modèles SQLAlchemy (16 modèles)
+- [x] Routes API RESTful
+  - [x] `/api/items` (GET, filters)
+  - [x] `/api/items/<wakfu_id>` (GET details)
+  - [x] `/api/recipes` (GET, filters)
+  - [x] `/api/recipes/<wakfu_id>` (GET details)
+  - [x] `/api/recipes/craft-tree/<wakfu_id>` (GET tree)
+  - [x] `/api/resources` (GET, filters)
+  - [x] `/api/stats/overview` (GET stats)
+  - [x] `/api/search/global` (GET search)
+  - [x] `/api/imports/recent` (GET imports)
+  - [x] `/api/imports/import-all` (POST)
+- [ ] Services métier
+  - [x] CraftCalculator (build_craft_tree)
+  - [ ] SearchService (global search basique créé)
+  - [ ] HarvestOptimizer
+- [ ] Tests unitaires (couverture > 80%)
+
+### Phase 3: Frontend Angular (4-5 jours) - EN COURS
+
+**Progression : 85%**
+
+- [x] Services HTTP Angular
+  - [x] ItemsService (getItems, getItemDetail)
+  - [x] RecipesService (getRecipes, getCraftTree)
+  - [x] ImportsService (importAll, getImportHistory)
+  - [x] WakfuDataService (getStats)
+- [x] Composants de visualisation
+  - [x] Dashboard (stats, search, recent imports)
+  - [x] ItemsList & ItemDetails (avec filtres)
+  - [x] CraftCalculator & CraftTree (récursif)
+  - [x] ImportsDashboard (avec phases)
+  - [x] ResourcesList (harvest zones)
+  - [x] GlobalSearch (composant)
+- [x] UX/UI améliorée
+- [x] Responsive design
+- [ ] Tests e2e (0%)
+
+### Phase 4: Fonctionnalités Avancées (3-4 jours) - À VENIR
+
+**Progression : 0%**
+
+- [ ] Calculateur de craft récursif avec visualisation
+- [ ] Recherche globale full-text
+- [ ] Optimiseur de récolte
+- [ ] Système de favoris (optionnel)
+
+### Phase 5: Documentation & Déploiement (1-2 jours) - À VENIR
+
+**Progression : 40%**
+
+- [x] Documentation technique
+- [ ] Documentation API (Swagger/OpenAPI)
+- [ ] Guide d'installation mis à jour
+- [ ] CI/CD (GitHub Actions)
+- [ ] Déploiement Docker Compose
+- [ ] Guide de contribution
+
+---
+
+## 🎯 Tâches Prioritaires (Cette Semaine)
+
+### Haute Priorité 🔴
+
+1. **Vérifier compilation Angular** - Phase 3 (30min)
+2. **Tester tous les endpoints** - Phase 2-3 (1-2h)
+3. **Corriger dernières erreurs** - Phase 3 (1-2h)
+4. **Tests e2e basiques** - Phase 3 (2-3h)
+
+### Moyenne Priorité 🟡
+
+5. Finaliser documentation technique - Phase 5 (2h)
+6. Tests unitaires backend - Phase 2 (4-6h)
+7. Optimiser performances - Phase 4 (2-3h)
+
+### Basse Priorité 🟢
+
+8. Améliorer UI/UX - Phase 3 (variable)
+9. Ajouter tests e2e complets - Phase 3 (4-6h)
+10. Setup CI/CD - Phase 5 (2-4h)
+
+---
+
+## 📋 Anciennes Tâches (Référence)
+
+### Phase 1: Setup Initial ✅ TERMINÉ
 
 - [x] Migrer la base de données
 - [x] Tester la connexion API
@@ -11,42 +162,18 @@
 - [x] Calculateur de craft récursif
 - [x] Interface de test visuelle
 
----
-
-## Phase 2: Frontend - Interface Utilisateur ✅ TERMINÉ
-
-### Vue des Catégories ✅
+### Phase 2: Frontend - Interface Utilisateur ✅ TERMINÉ
 
 - [x] Composant `categories-view`
 - [x] Grid de cartes avec compteurs
 - [x] Navigation vers items par catégorie
-- [x] Organisation par groupes parents
-- [x] Badges colorés par type
-
-### Page Items Améliorée ✅
-
-- [x] Filtre par catégorie (dropdown)
-- [x] Filtre par rareté avec couleurs
-- [x] Filtre par niveau (min/max)
+- [x] Filtre par catégorie/rareté/niveau
 - [x] Recherche textuelle
-- [x] Badges visuels (catégorie, niveau, rareté)
-- [x] Affichage des effets parsés lisibles
-- [x] Pagination serveur-side
+- [x] Badges visuels
+- [x] Page détails item
+- [x] Affichage des effets parsés
 
-### Page Détails Item ✅
-
-- [x] Layout amélioré avec sections
-- [x] Affichage catégorie et badges
-- [x] Effets parsés en texte lisible
-- [x] Affichage de la recette si craftable
-- [x] Bouton vers calculateur de craft
-- [x] Navigation entre items
-
----
-
-## Phase 3: Calculateur de Craft Frontend ✅ TERMINÉ
-
-### MVP ✅
+### Phase 3: Calculateur de Craft Frontend ✅ TERMINÉ
 
 - [x] Service `wakfu-data.service.ts` avec endpoint craft-calculator
 - [x] Composant `craft-calculator`
