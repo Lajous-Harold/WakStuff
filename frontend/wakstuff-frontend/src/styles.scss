@@ -43,6 +43,16 @@ body {
   --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
 
   --transition: all 0.3s ease;
+
+  /* Couleurs de rareté Wakfu */
+  --rarity-common: #ffffff;
+  --rarity-unusual: #ffffff;
+  --rarity-rare: #12ff88;
+  --rarity-mythical: #f2ba00;
+  --rarity-legendary: #edf500;
+  --rarity-relic: #b77fff;
+  --rarity-souvenir: #26d4ff;
+  --rarity-epic: #eb78bd;
 }
 
 /* Boutons */
