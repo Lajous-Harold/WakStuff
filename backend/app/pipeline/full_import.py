@@ -8,6 +8,10 @@ PHASE 1: Métiers et Types
 - ItemType (96 types depuis itemTypes.json)
 - EquipmentItemType (31 types depuis equipmentItemTypes.json)
 - ResourceType (6 types depuis resourceTypes.json)
+- Action (72 actions depuis actions.json)
+- State (290 états depuis states.json)
+- ItemProperty (9 propriétés depuis itemProperties.json)
+- Blueprint (109 blueprints depuis blueprints.json)
 
 PHASE 2: Ressources et Récolte
 - Resource (170 ressources depuis resources.json)
@@ -34,6 +38,7 @@ from typing import Any, Dict, List, Optional
 from ..database import db
 from ..models import (
     Action,
+    Blueprint,
     CollectibleResource,
     EquipmentItem,
     EquipmentItemType,
@@ -42,6 +47,7 @@ from ..models import (
     ImportBatch,
     Item,
     ItemCategory,
+    ItemProperty,
     ItemRaw,
     ItemType,
     JobItem,
@@ -185,6 +191,85 @@ def import_resource_types() -> int:
     
     db.session.commit()
     logger.info(f"✓ {count} ResourceType importés")
+    return count
+
+
+def import_actions() -> int:
+    """Import des Action depuis actions.json (72 actions)."""
+    logger.info("Phase 1.5: Import des Action...")
+    actions = load_json('actions.json')
+    count = 0
+    
+    for action in actions:
+        action_obj = Action(
+            wakfu_id=action['definition']['id'],
+            effect=action['definition'].get('effect'),
+            description=action.get('description', {})
+        )
+        db.session.add(action_obj)
+        count += 1
+    
+    db.session.commit()
+    logger.info(f"✓ {count} Action importées")
+    return count
+
+
+def import_states() -> int:
+    """Import des State depuis states.json (290 states)."""
+    logger.info("Phase 1.6: Import des State...")
+    states = load_json('states.json')
+    count = 0
+    
+    for state in states:
+        state_obj = State(
+            wakfu_id=state['definition']['id'],
+            title=state.get('title', {}),
+            description=state.get('description')
+        )
+        db.session.add(state_obj)
+        count += 1
+    
+    db.session.commit()
+    logger.info(f"✓ {count} State importés")
+    return count
+
+
+def import_item_properties() -> int:
+    """Import des ItemProperty depuis itemProperties.json (9 propriétés)."""
+    logger.info("Phase 1.7: Import des ItemProperty...")
+    properties = load_json('itemProperties.json')
+    count = 0
+    
+    for prop in properties:
+        property_obj = ItemProperty(
+            wakfu_id=prop['id'],
+            name=prop['name'],
+            description=prop.get('description')
+        )
+        db.session.add(property_obj)
+        count += 1
+    
+    db.session.commit()
+    logger.info(f"✓ {count} ItemProperty importées")
+    return count
+
+
+def import_blueprints() -> int:
+    """Import des Blueprint depuis blueprints.json (109 blueprints)."""
+    logger.info("Phase 1.8: Import des Blueprint...")
+    blueprints = load_json('blueprints.json')
+    count = 0
+    
+    for blueprint in blueprints:
+        blueprint_obj = Blueprint(
+            blueprint_id=blueprint['blueprintId'],
+            recipe_ids=blueprint['recipeId']
+        )
+        db.session.add(blueprint_obj)
+        count += 1
+    
+    db.session.commit()
+    logger.info(f"✓ {count} Blueprint importés")
     return count
 
 
@@ -388,14 +473,17 @@ def import_items() -> int:
         # Croiser avec JobItem si disponible
         job_item = JobItem.query.filter_by(wakfu_id=item_id).first()
         
+        # itemTypeId correspond aux equipment types (même structure ID dans les JSONs)
+        item_type_id = item_obj.get('baseParameters', {}).get('itemTypeId')
+        
         item = Item(
             wakfu_id=item_id,
             title=item_data.get('title', {}),
             description=item_data.get('description'),
             level=item_obj.get('level'),
             rarity=item_obj.get('baseParameters', {}).get('rarity'),
-            item_type_id=item_obj.get('baseParameters', {}).get('itemTypeId'),
-            equipment_type_id=None,  # Non disponible dans items.json
+            item_type_id=item_type_id,
+            equipment_type_id=item_type_id,  # itemTypeId correspond aux equipment types
             icon_gfx_id=item_obj.get('graphicParameters', {}).get('gfxId'),
             use_effects=definition.get('useEffects'),
             use_critical_effects=definition.get('useCriticalEffects'),
@@ -499,13 +587,28 @@ def run_full_wakfu_import(batch: Optional[ImportBatch] = None) -> ImportBatch:
     except Exception as e:
         logger.info(f"✅ Tables déjà existantes ({str(e)[:50]})")
     
+    # Récupérer la version du jeu depuis l'API Wakfu
+    game_version = "unknown"
+    try:
+        from ..wakfu_client import WakfuClient
+        client = WakfuClient()
+        game_version = client.get_current_version()
+        logger.info(f"🎮 Version du jeu détectée: {game_version}")
+    except Exception as e:
+        logger.warning(f"⚠️ Impossible de récupérer la version du jeu: {e}")
+    
     if batch is None:
         batch = ImportBatch(
             batch_type="full_import",
             status="in_progress",
-            started_at=now_utc()
+            started_at=now_utc(),
+            game_version=game_version
         )
         db.session.add(batch)
+        db.session.commit()
+    else:
+        # Mettre à jour la version si le batch existe déjà
+        batch.game_version = game_version
         db.session.commit()
     
     try:
@@ -521,6 +624,10 @@ def run_full_wakfu_import(batch: Optional[ImportBatch] = None) -> ImportBatch:
         stats["phase_1"]["item_types"] = import_item_types()
         stats["phase_1"]["equipment_item_types"] = import_equipment_item_types()
         stats["phase_1"]["resource_types"] = import_resource_types()
+        stats["phase_1"]["actions"] = import_actions()
+        stats["phase_1"]["states"] = import_states()
+        stats["phase_1"]["item_properties"] = import_item_properties()
+        stats["phase_1"]["blueprints"] = import_blueprints()
         phase_1_total = sum(stats["phase_1"].values())
         logger.info(f"✅ Phase 1 terminée: {phase_1_total} entrées")
         
@@ -550,9 +657,11 @@ def run_full_wakfu_import(batch: Optional[ImportBatch] = None) -> ImportBatch:
         
         # FINALISATION
         total_imported = phase_1_total + phase_2_total + phase_3_total + phase_4_total
+        end_time = now_utc()
         
         batch.status = "completed"
-        batch.completed_at = now_utc()
+        batch.completed_at = end_time
+        batch.ended_at = end_time  # Même valeur que completed_at
         batch.items_imported = total_imported
         batch.import_metadata = {
             "stats": stats,
@@ -574,9 +683,13 @@ def run_full_wakfu_import(batch: Optional[ImportBatch] = None) -> ImportBatch:
         
     except Exception as e:
         logger.error(f"❌ Erreur lors de l'import: {e}", exc_info=True)
+        end_time = now_utc()
         batch.status = "failed"
         batch.error_message = str(e)
-        batch.completed_at = now_utc()
+        batch.error_count = 1
+        batch.completed_at = end_time
+        batch.ended_at = end_time
+        # game_version est déjà défini au début de la fonction
         db.session.commit()
         raise
 
@@ -584,9 +697,10 @@ def run_full_wakfu_import(batch: Optional[ImportBatch] = None) -> ImportBatch:
 # ========== UTILITAIRES ==========
 
 def clear_all_data():
-    """Supprime toutes les données importées."""
+    """Supprime toutes les données importées (sauf l'historique des imports)."""
     logger.warning("⚠️ Suppression de toutes les données...")
     
+    # Supprimer les données
     RecipeResult.query.delete()
     RecipeIngredient.query.delete()
     Recipe.query.delete()
@@ -600,9 +714,64 @@ def clear_all_data():
     EquipmentItemType.query.delete()
     ItemType.query.delete()
     RecipeCategory.query.delete()
+    Blueprint.query.delete()
+    ItemProperty.query.delete()
+    State.query.delete()
+    Action.query.delete()
+    
+    # NE PAS supprimer l'historique des imports (ImportBatch)
+    # pour conserver la traçabilité
     
     db.session.commit()
-    logger.info("✓ Toutes les données ont été supprimées")
+    logger.info("✓ Toutes les données ont été supprimées (historique conservé)")
+
+
+def clear_all_data_and_history():
+    """Supprime TOUT, y compris l'historique des imports, et réinitialise les séquences d'ID."""
+    logger.warning("⚠️ SUPPRESSION COMPLÈTE : données + historique...")
+    
+    # Supprimer d'abord toutes les données
+    RecipeResult.query.delete()
+    RecipeIngredient.query.delete()
+    Recipe.query.delete()
+    Item.query.delete()
+    JobItem.query.delete()
+    HarvestResource.query.delete()
+    HarvestLoot.query.delete()
+    CollectibleResource.query.delete()
+    Resource.query.delete()
+    ResourceType.query.delete()
+    EquipmentItemType.query.delete()
+    ItemType.query.delete()
+    RecipeCategory.query.delete()
+    Blueprint.query.delete()
+    ItemProperty.query.delete()
+    State.query.delete()
+    Action.query.delete()
+    
+    # Supprimer l'historique des imports
+    from ..models import ImportBatch
+    ImportBatch.query.delete()
+    
+    db.session.commit()
+    
+    # Réinitialiser les séquences PostgreSQL pour repartir à 1
+    tables_with_sequences = [
+        'import_batches',
+        'recipe_categories', 'item_types', 'equipment_item_types', 'resource_types',
+        'actions', 'states', 'item_properties', 'blueprints',
+        'resources', 'collectable_resources', 'harvest_loots', 'harvest_resources',
+        'job_items', 'items', 'recipes', 'recipe_ingredients', 'recipe_results'
+    ]
+    
+    for table in tables_with_sequences:
+        try:
+            db.session.execute(db.text(f"ALTER SEQUENCE {table}_id_seq RESTART WITH 1"))
+        except Exception as e:
+            logger.warning(f"Impossible de réinitialiser la séquence {table}: {e}")
+    
+    db.session.commit()
+    logger.info("✓ TOUT supprimé + séquences réinitialisées")
 
 
 def get_import_stats() -> Dict[str, int]:
@@ -612,6 +781,10 @@ def get_import_stats() -> Dict[str, int]:
         "item_types": ItemType.query.count(),
         "equipment_item_types": EquipmentItemType.query.count(),
         "resource_types": ResourceType.query.count(),
+        "actions": Action.query.count(),
+        "states": State.query.count(),
+        "item_properties": ItemProperty.query.count(),
+        "blueprints": Blueprint.query.count(),
         "resources": Resource.query.count(),
         "collectable_resources": CollectibleResource.query.count(),
         "harvest_loots": HarvestLoot.query.count(),

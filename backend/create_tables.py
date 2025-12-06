@@ -19,7 +19,7 @@ sys.path.insert(0, str(backend_dir))
 from app import create_app
 from app.database import db
 from app.models import (
-    ImportBatch, ItemRaw, Action, State,
+    ImportBatch, ItemRaw, Action, State, ItemProperty, Blueprint,
     RecipeCategory, ItemType, EquipmentItemType, ResourceType,
     Resource, CollectibleResource, HarvestLoot, HarvestResource,
     JobItem, Item, ItemCategory,
@@ -68,6 +68,8 @@ def init_database(drop_existing=False):
         print("   ✓ item_raw           - JSON brut pour debug")
         print("   ✓ actions            - Actions Wakfu")
         print("   ✓ states             - États/buffs")
+        print("   ✓ item_properties    - Propriétés spéciales (Relique, etc.)")
+        print("   ✓ blueprints         - Relation blueprints ↔ recettes")
 
         # Tables métiers & catégories
         print("\n🏷️  Métiers & Catégories:")

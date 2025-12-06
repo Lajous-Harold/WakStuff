@@ -78,6 +78,28 @@ class State(db.Model, DictSerializable):
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=now_utc)
 
 
+class ItemProperty(db.Model, DictSerializable):
+    """Propriétés spéciales des items (itemProperties.json)"""
+    __tablename__ = "item_properties"
+
+    id = db.Column(db.Integer, primary_key=True)
+    wakfu_id = db.Column(db.Integer, nullable=False, unique=True, index=True)
+    name = db.Column(db.String(128), nullable=False)  # "EXCLUSIVE_EQUIPMENT_ITEM"
+    description = db.Column(db.Text)  # "[Relique] Il ne peut y avoir qu'un seul..."
+    created_at = db.Column(db.DateTime(timezone=True), default=now_utc)
+    updated_at = db.Column(db.DateTime(timezone=True), onupdate=now_utc)
+
+
+class Blueprint(db.Model, DictSerializable):
+    """Relation entre blueprints et recettes (blueprints.json)"""
+    __tablename__ = "blueprints"
+
+    id = db.Column(db.Integer, primary_key=True)
+    blueprint_id = db.Column(db.Integer, nullable=False, unique=True, index=True)
+    recipe_ids = db.Column(db.JSON, nullable=False)  # Liste des recipeId
+    created_at = db.Column(db.DateTime(timezone=True), default=now_utc)
+
+
 # ============================================================================
 # MÉTIERS & CATÉGORIES
 # ============================================================================
