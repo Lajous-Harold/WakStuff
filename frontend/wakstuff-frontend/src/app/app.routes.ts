@@ -1,55 +1,117 @@
 import { Routes } from '@angular/router';
-import { ItemsList } from './features/items/items-list/items-list';
-import { ItemDetails } from './features/items/item-details/item-details';
-import { ImportsDashboard } from './features/imports/imports-dashboard/imports-dashboard';
-import { CraftCalculator } from './features/craft-calculator/craft-calculator';
-import { CategoriesView } from './features/categories/categories-view';
-import { StatsDashboard } from './features/stats/stats-dashboard';
-import { HarvestResourcesComponent } from './features/harvest-resources/harvest-resources-list/harvest-resources';
-import { importsResolver } from './core/resolvers/imports.resolver';
-import { categoriesResolver } from './core/resolvers/categories.resolver';
-import { harvestResourcesResolver } from './core/resolvers/harvest-resources.resolver';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'items', pathMatch: 'full' },
-
   {
-    path: 'items',
-    component: ItemsList,
+    path: '',
+    redirectTo: 'dashboard',
+    pathMatch: 'full',
   },
 
+  // Dashboard
   {
-    path: 'items/:id',
-    component: ItemDetails,
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
   },
 
-  {
-    path: 'categories',
-    component: CategoriesView,
-  },
-
-  {
-    path: 'harvest-resources',
-    component: HarvestResourcesComponent,
-  },
-
-  {
-    path: 'stats',
-    component: StatsDashboard,
-  },
-
-  {
-    path: 'craft-calculator',
-    component: CraftCalculator,
-  },
-
+  // Imports
   {
     path: 'imports',
-    component: ImportsDashboard,
-    resolve: {
-      batches: importsResolver,
-    },
+    loadComponent: () =>
+      import('./features/imports/imports-dashboard/imports-dashboard.component').then(
+        (m) => m.ImportsDashboardComponent
+      ),
   },
 
-  { path: '**', redirectTo: 'items' },
+  // Items
+  {
+    path: 'items',
+    loadComponent: () =>
+      import('./features/items/items-list/items-list.component').then((m) => m.ItemsListComponent),
+  },
+  {
+    path: 'items/:wakfuId',
+    loadComponent: () =>
+      import('./features/items/item-details/item-details.component').then(
+        (m) => m.ItemDetailsComponent
+      ),
+  },
+
+  // Resources
+  {
+    path: 'resources',
+    loadComponent: () =>
+      import('./features/resources/resources-list/resources-list.component').then(
+        (m) => m.ResourcesListComponent
+      ),
+  },
+  {
+    path: 'resources/:wakfuId',
+    loadComponent: () =>
+      import('./features/resources/resource-details/resource-details.component').then(
+        (m) => m.ResourceDetailsComponent
+      ),
+  },
+
+  // Crafting
+  {
+    path: 'craft',
+    loadComponent: () =>
+      import('./features/craft/craft-calculator.component').then((m) => m.CraftCalculatorComponent),
+  },
+  {
+    path: 'craft/:wakfuId',
+    loadComponent: () =>
+      import('./features/craft/craft-calculator.component').then((m) => m.CraftCalculatorComponent),
+  },
+
+  // Favorites (Phase 2) - TODO
+  // {
+  //   path: 'favorites',
+  //   loadComponent: () => import('./features/favorites/favorites.component').then(m => m.FavoritesComponent)
+  // },
+
+  // Jobs (Phase 2) - TODO
+  // {
+  //   path: 'jobs',
+  //   loadComponent: () => import('./features/jobs/jobs-list/jobs-list.component').then(m => m.JobsListComponent)
+  // },
+  // {
+  //   path: 'jobs/:categoryId',
+  //   loadComponent: () => import('./features/jobs/job-details/job-details.component').then(m => m.JobDetailsComponent)
+  // },
+  // {
+  //   path: 'jobs/:categoryId/xp-calculator',
+  //   loadComponent: () => import('./features/jobs/xp-calculator/xp-calculator.component').then(m => m.XpCalculatorComponent)
+  // },
+
+  // Encyclopedia (Phase 3) - TODO
+  // {
+  //   path: 'encyclopedia',
+  //   loadComponent: () => import('./features/encyclopedia/encyclopedia.component').then(m => m.EncyclopediaComponent)
+  // },
+
+  // Comparator (Phase 3) - TODO
+  // {
+  //   path: 'comparator',
+  //   loadComponent: () => import('./features/comparator/comparator.component').then(m => m.ComparatorComponent)
+  // },
+
+  // Harvest Zones (Phase 3) - TODO
+  // {
+  //   path: 'harvest-zones',
+  //   loadComponent: () => import('./features/harvest-zones/harvest-zones.component').then(m => m.HarvestZonesComponent)
+  // },
+
+  // Profile (Phase 3) - TODO
+  // {
+  //   path: 'profile',
+  //   loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent)
+  // },
+
+  // Catch-all
+  {
+    path: '**',
+    redirectTo: 'dashboard',
+  },
 ];
