@@ -9,7 +9,8 @@ from ..models import ImportBatch
 from ..pipeline.full_import import (
     run_full_wakfu_import,
     get_import_stats,
-    clear_all_data
+    clear_all_data,
+    clear_all_data_and_history
 )
 import logging
 
@@ -152,7 +153,7 @@ def get_batches():
 @bp.route('/clear', methods=['POST'])
 def clear_data():
     """
-    Supprime toutes les données importées.
+    Supprime toutes les données importées (mais garde l'historique).
     
     POST /api/imports/clear
     
@@ -174,11 +175,57 @@ def clear_data():
         
         return jsonify({
             "status": "success",
-            "message": "Toutes les données ont été supprimées"
+            "message": "Toutes les données ont été supprimées (historique conservé)"
         }), 200
         
     except Exception as e:
         logger.error(f"Erreur lors de la suppression: {e}", exc_info=True)
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
+@bp.route('/clear-history', methods=['POST'])
+def clear_history():
+    """
+    Supprime uniquement l'historique des imports (garde les données).
+    
+    POST /api/imports/clear-history
+    
+    Body:
+    {
+        "confirm": true  // Obligatoire pour confirmer
+    }
+    """
+    try:
+        data = request.get_json() or {}
+        
+        if not data.get('confirm'):
+            return jsonify({
+                "status": "error",
+                "message": "Confirmation requise (confirm: true)"
+            }), 400
+        
+        # Supprimer uniquement l'historique
+        from ..models import ImportBatch
+        ImportBatch.query.delete()
+        db.session.commit()
+        
+        # Réinitialiser la séquence des IDs
+        try:
+            db.session.execute(db.text("ALTER SEQUENCE import_batches_id_seq RESTART WITH 1"))
+            db.session.commit()
+        except Exception as e:
+            logger.warning(f"Impossible de réinitialiser la séquence: {e}")
+        
+        return jsonify({
+            "status": "success",
+            "message": "Historique des imports supprimé (IDs réinitialisés)"
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de la suppression de l'historique: {e}", exc_info=True)
         return jsonify({
             "status": "error",
             "message": str(e)
