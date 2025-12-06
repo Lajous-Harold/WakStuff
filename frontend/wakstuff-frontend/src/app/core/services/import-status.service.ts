@@ -32,8 +32,12 @@ export class ImportStatusService {
     return this.http.get<any>(`${this.API_URL}/stats/overview`).pipe(
       map((stats) => {
         // Si au moins un type de données existe, considérer que des imports ont été faits
+        // Vérifier items, resources, recipes ET job_items pour plus de robustesse
         const hasData =
-          stats.total_items > 0 || stats.total_resources > 0 || stats.total_recipes > 0;
+          stats.total_items > 0 || 
+          stats.total_resources > 0 || 
+          stats.total_recipes > 0 ||
+          stats.total_job_items > 0;
         this.hasImportedData.set(hasData);
         return hasData;
       }),

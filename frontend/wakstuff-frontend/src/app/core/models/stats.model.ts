@@ -17,6 +17,8 @@ export interface GlobalSearchResult {
   resources: Resource[];
   recipes: Recipe[];
   total: number;
+  page?: number;
+  per_page?: number;
 }
 
 export interface ImportBatch {
