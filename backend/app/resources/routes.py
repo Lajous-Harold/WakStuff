@@ -24,33 +24,46 @@ def get_resources():
     - level_min, level_max: Niveau de récolte
     - page, per_page: Pagination
     """
-    resource_type_id = request.args.get('resource_type_id', type=int)
-    level_min = request.args.get('level_min', type=int)
-    level_max = request.args.get('level_max', type=int)
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 50, type=int)
-    
-    query = Resource.query
-    
-    if resource_type_id:
-        query = query.filter(Resource.resource_type_id == resource_type_id)
-    
-    if level_min:
-        query = query.filter(Resource.level >= level_min)
-    
-    if level_max:
-        query = query.filter(Resource.level <= level_max)
-    
-    query = query.order_by(Resource.level, Resource.wakfu_id)
-    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-    
-    return jsonify({
-        'resources': [r.to_dict() for r in pagination.items],
-        'total': pagination.total,
-        'page': page,
-        'per_page': per_page,
-        'pages': pagination.pages
-    })
+    try:
+        resource_type_id = request.args.get('resource_type_id', type=int)
+        level_min = request.args.get('level_min', type=int)
+        level_max = request.args.get('level_max', type=int)
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        
+        query = Resource.query
+        
+        if resource_type_id:
+            query = query.filter(Resource.resource_type_id == resource_type_id)
+        
+        if level_min:
+            query = query.filter(Resource.level >= level_min)
+        
+        if level_max:
+            query = query.filter(Resource.level <= level_max)
+        
+        query = query.order_by(Resource.level, Resource.wakfu_id)
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        return jsonify({
+            'resources': [r.to_dict() for r in pagination.items],
+            'total': pagination.total,
+            'page': page,
+            'per_page': per_page,
+            'pages': pagination.pages
+        })
+    except Exception:
+        # Si les tables n'existent pas, retourner des données vides
+        db.session.rollback()
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        return jsonify({
+            'resources': [],
+            'total': 0,
+            'page': page,
+            'per_page': per_page,
+            'pages': 0
+        })
 
 
 @bp.route('/<int:wakfu_id>', methods=['GET'])
@@ -142,8 +155,15 @@ def get_resource_types():
     
     Liste tous les types de ressources (Arbres, Cultures, Minerais, etc.)
     """
-    types = ResourceType.query.order_by(ResourceType.type_id).all()
-    
-    return jsonify({
-        'resource_types': [rt.to_dict() for rt in types]
-    })
+    try:
+        types = ResourceType.query.order_by(ResourceType.type_id).all()
+        
+        return jsonify({
+            'types': [rt.to_dict() for rt in types]
+        })
+    except Exception:
+        # Si les tables n'existent pas, retourner une liste vide
+        db.session.rollback()
+        return jsonify({
+            'types': []
+        })

@@ -27,6 +27,7 @@ def create_app() -> Flask:
     from .harvest.routes import bp as harvest_bp
     from .imports.routes import bp as imports_bp
     from .proxy.routes import proxy_bp
+    from .stats.routes import bp as stats_bp
 
     app.register_blueprint(items_bp, url_prefix="/api/items")
     app.register_blueprint(resources_bp, url_prefix="/api/resources")
@@ -35,6 +36,9 @@ def create_app() -> Flask:
     app.register_blueprint(harvest_bp, url_prefix="/api/harvest")
     app.register_blueprint(imports_bp, url_prefix="/api/imports")
     app.register_blueprint(proxy_bp, url_prefix="/api/proxy")
+    app.register_blueprint(stats_bp, url_prefix="/api/stats")
+    # Le même blueprint stats contient aussi les routes /search
+    # Flask gère automatiquement les routes avec différents prefixes
 
     return app
 
