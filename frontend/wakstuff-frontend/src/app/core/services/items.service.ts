@@ -7,7 +7,7 @@ import { environment } from '../config';
 export interface ItemFilters {
   search?: string;
   item_type_id?: number;
-  equipment_type_id?: number;
+  equipment_type_id?: number | string; // Peut être un ID (number) ou une catégorie groupée (string)
   rarity?: number;
   level_min?: number;
   level_max?: number;
@@ -36,15 +36,16 @@ export class ItemsService {
     return this.http.get<ItemsListResponse>(`${this.apiUrl}/items`, { params });
   }
 
-  getItemDetail(wakfuId: number): Observable<ItemDetail> {
-    return this.http.get<ItemDetail>(`${this.apiUrl}/items/${wakfuId}`);
+  getItemDetail(wakfuId: number): Observable<{ item: ItemDetail }> {
+    return this.http.get<{ item: ItemDetail }>(`${this.apiUrl}/items/${wakfuId}`);
   }
 
   getItemTypes(): Observable<any> {
     return this.http.get(`${this.apiUrl}/items/types`);
   }
 
-  getEquipmentTypes(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/items/equipment-types`);
+  getEquipmentTypes(grouped: boolean = true): Observable<any> {
+    const params = new HttpParams().set('grouped', grouped.toString());
+    return this.http.get(`${this.apiUrl}/items/equipment-types`, { params });
   }
 }

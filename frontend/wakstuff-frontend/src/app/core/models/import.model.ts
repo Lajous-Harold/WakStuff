@@ -1,19 +1,11 @@
 export interface ImportResult {
-  success: boolean;
-  import_id: number;
-  timestamp: string;
-  grand_total: number;
-  phase_1_total: number;
-  phase_2_total: number;
-  phase_3_total: number;
-  phase_4_total: number;
-  timing: {
-    phase_1: number;
-    phase_2: number;
-    phase_3: number;
-    phase_4: number;
-    total: number;
-  };
+  status: string;
+  batch_id: number;
+  stats: any;
+  metadata: ImportMetadata;
+  message: string;
+  started_at?: string;
+  completed_at?: string;
 }
 
 export interface ImportStats {
@@ -32,8 +24,38 @@ export interface ImportStats {
   total: number;
 }
 
+export interface PhaseStats {
+  [key: string]: number;
+}
+
+export interface ImportMetadata {
+  stats: {
+    phase_1?: PhaseStats;
+    phase_2?: PhaseStats;
+    phase_3?: PhaseStats;
+    phase_4?: PhaseStats;
+    [key: string]: PhaseStats | undefined;
+  };
+  summary?: {
+    grand_total: number;
+    phase_1_total: number;
+    phase_2_total: number;
+    phase_3_total: number;
+    phase_4_total: number;
+  };
+}
+
 export interface ImportBatch {
   id: number;
-  timestamp: string;
-  total_entries: number;
+  batch_type: string;
+  started_at: string;
+  completed_at?: string;
+  ended_at?: string;
+  status: 'in_progress' | 'completed' | 'failed';
+  items_imported?: number;
+  import_metadata?: ImportMetadata;
+  error_message?: string;
+  error_count?: number;
+  game_version?: string;
+  total_items?: number;
 }

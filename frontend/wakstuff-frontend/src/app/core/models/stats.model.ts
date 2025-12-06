@@ -21,8 +21,5 @@ export interface GlobalSearchResult {
   per_page?: number;
 }
 
-export interface ImportBatch {
-  id: number;
-  timestamp: string;
-  total_entries: number;
-}
+// Réexporter ImportBatch depuis import.model.ts pour éviter la duplication
+export type { ImportBatch } from './import.model';

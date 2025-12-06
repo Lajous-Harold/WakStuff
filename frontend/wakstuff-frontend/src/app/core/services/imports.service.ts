@@ -12,11 +12,25 @@ export class ImportsService {
 
   constructor(private http: HttpClient) {}
 
-  importAll(): Observable<ImportResult> {
-    return this.http.post<ImportResult>(`${this.apiUrl}/imports/full`, {});
+  importAll(clearBefore: boolean = true): Observable<ImportResult> {
+    return this.http.post<ImportResult>(`${this.apiUrl}/imports/full`, {
+      clear_before: clearBefore,
+    });
   }
 
-  getImportHistory(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/imports/history`);
+  getImportBatches(limit: number = 20): Observable<any> {
+    return this.http.get(`${this.apiUrl}/imports/batches?limit=${limit}`);
+  }
+
+  clearAllData(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/imports/clear`, { confirm: true });
+  }
+
+  clearImportHistory(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/imports/clear-history`, { confirm: true });
+  }
+
+  getImportStats(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/imports/stats`);
   }
 }
