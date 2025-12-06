@@ -85,7 +85,7 @@ def get_craft_tree(item_wakfu_id):
     GET /api/recipes/craft-tree/<item_wakfu_id>
     
     Arbre de craft récursif pour un item.
-    Inclut tous les ingrédients et sous-recettes nécessaires.
+    Retourne le format CraftTreeResponse attendu par le frontend.
     
     Query params:
     - quantity: Quantité souhaitée (défaut: 1)
@@ -101,8 +101,25 @@ def get_craft_tree(item_wakfu_id):
         return jsonify({'error': 'Max depth must be between 1 and 20'}), 400
     
     try:
-        tree = build_craft_tree(item_wakfu_id, quantity, max_depth)
-        return jsonify(tree)
+        craft_tree = build_craft_tree(item_wakfu_id, quantity, max_depth)
+        
+        # Récupérer la recette si l'item est craftable
+        recipe_info = None
+        if not craft_tree.get('is_resource') and craft_tree.get('recipe_wakfu_id'):
+            recipe = Recipe.query.filter_by(wakfu_id=craft_tree['recipe_wakfu_id']).first()
+            if recipe:
+                recipe_dict = recipe.to_dict(lang='fr')
+                recipe_info = {
+                    'id': recipe_dict.get('id'),
+                    'wakfu_id': recipe_dict.get('wakfu_id'),
+                    'level': recipe_dict.get('level'),
+                    'recipe_category_id': recipe_dict.get('recipe_category_id')
+                }
+        
+        return jsonify({
+            'recipe': recipe_info,
+            'craft_tree': craft_tree
+        })
     except ValueError as e:
         return jsonify({'error': str(e)}), 404
 

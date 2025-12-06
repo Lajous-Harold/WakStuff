@@ -44,23 +44,27 @@ def get_stats_overview():
 @bp.route('/global', methods=['GET'])
 def global_search():
     """
-    GET /api/stats/global?query=<text>&limit=<number>
+    GET /api/stats/global?query=<text>&limit=<number>&page=<number>
     
-    Recherche globale dans items, recettes et ressources.
+    Recherche globale dans items, recettes et ressources avec pagination.
     """
     query_text = request.args.get('query', '').strip()
     limit = request.args.get('limit', 20, type=int)
+    page = request.args.get('page', 1, type=int)
     
     if not query_text:
         return jsonify({
             'items': [],
             'recipes': [],
             'resources': [],
-            'total': 0
+            'total': 0,
+            'page': page,
+            'per_page': limit
         })
     
     try:
         search_pattern = f'%{query_text}%'
+        offset = (page - 1) * limit
         
         # Recherche dans items
         items = Item.query.filter(
@@ -68,25 +72,27 @@ def global_search():
                 Item.title.cast(db.String).ilike(search_pattern),
                 Item.description.cast(db.String).ilike(search_pattern)
             )
-        ).limit(limit).all()
+        ).offset(offset).limit(limit).all()
         
         # Recherche dans resources
         resources = Resource.query.filter(
             Resource.title.cast(db.String).ilike(search_pattern)
-        ).limit(limit).all()
+        ).offset(offset).limit(limit).all()
         
         # Recherche dans recipes - via les items produits
         recipes = Recipe.query.join(
             Item, Recipe.wakfu_id == Item.wakfu_id
         ).filter(
             Item.title.cast(db.String).ilike(search_pattern)
-        ).limit(limit).all()
+        ).offset(offset).limit(limit).all()
         
         return jsonify({
             'items': [item.to_dict() for item in items],
             'resources': [res.to_dict() for res in resources],
             'recipes': [recipe.to_dict() for recipe in recipes],
-            'total': len(items) + len(resources) + len(recipes)
+            'total': len(items) + len(resources) + len(recipes),
+            'page': page,
+            'per_page': limit
         })
     except Exception:
         # Si erreur (tables n'existent pas), retourner des listes vides
@@ -95,8 +101,11 @@ def global_search():
             'items': [],
             'recipes': [],
             'resources': [],
-            'total': 0
+            'total': 0,
+            'page': page,
+            'per_page': limit
         })
+
 
 
 @bp.route('/recent', methods=['GET'])
