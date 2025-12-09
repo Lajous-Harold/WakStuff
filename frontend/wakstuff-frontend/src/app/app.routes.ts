@@ -83,14 +83,18 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'craft/calculator/:wakfuId',
+    path: 'craft/calculator/:itemId',
     loadComponent: () =>
-      import('./features/craft/craft-calculator.component').then((m) => m.CraftCalculatorComponent),
+      import('./features/craft/craft-calculator/craft-calculator.component').then(
+        (m) => m.CraftCalculatorComponent
+      ),
   },
   {
-    path: 'craft/:wakfuId',
+    path: 'craft/:itemId',
     loadComponent: () =>
-      import('./features/craft/craft-calculator.component').then((m) => m.CraftCalculatorComponent),
+      import('./features/craft/craft-calculator/craft-calculator.component').then(
+        (m) => m.CraftCalculatorComponent
+      ),
   },
 
   // Favorites (Phase 2) - TODO

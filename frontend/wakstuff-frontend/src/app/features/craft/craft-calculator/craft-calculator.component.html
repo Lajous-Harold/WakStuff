@@ -1,0 +1,103 @@
+<div class="calculator-container">
+  <app-loading-spinner *ngIf="loading()" />
+  <app-error-message *ngIf="error()" [message]="error()!" />
+
+  @if (!loading() && !error() && craftTree()) {
+  <header class="page-header">
+    <button class="back-btn" (click)="goBack()">← Retour</button>
+
+    <div class="calculator-info">
+      <h1>Calculateur de Craft</h1>
+      @if (craftTree()!.recipe) {
+      <p class="recipe-name">
+        {{ craftTree()!.craft_tree.item_title }}
+        <span class="level-badge">Niv. {{ craftTree()!.recipe!.level }}</span>
+      </p>
+      } @else {
+      <p class="recipe-name">{{ craftTree()!.craft_tree.item_title }}</p>
+      }
+    </div>
+  </header>
+
+  <div class="calculator-content">
+    <!-- Controls -->
+    <div class="controls-panel">
+      <div class="control-group">
+        <label for="quantity">Quantité à crafter :</label>
+        <input
+          type="number"
+          id="quantity"
+          [(ngModel)]="quantity"
+          (ngModelChange)="onQuantityChange()"
+          min="1"
+          max="9999"
+        />
+      </div>
+
+      <div class="control-group">
+        <label for="maxDepth">Profondeur max :</label>
+        <input
+          type="number"
+          id="maxDepth"
+          [(ngModel)]="maxDepth"
+          (ngModelChange)="onMaxDepthChange()"
+          min="1"
+          max="20"
+        />
+      </div>
+
+      <button class="export-btn" (click)="exportMaterials()">📥 Exporter la liste</button>
+    </div>
+
+    <!-- Craft Tree Visualization -->
+    <div class="tree-panel">
+      <h2>Arbre de craft</h2>
+      <div class="tree-container">
+        @if (craftTree()!.craft_tree) {
+        <app-craft-tree-node
+          [node]="craftTree()!.craft_tree"
+          [ownedItems]="ownedItems()"
+          (toggleOwned)="toggleOwned($event)"
+        />
+        } @else {
+        <p class="no-tree">Aucun arbre de craft disponible</p>
+        }
+      </div>
+    </div>
+
+    <!-- Materials Summary -->
+    <div class="materials-panel">
+      <h2>Matériaux nécessaires ({{ materials().length }})</h2>
+
+      @if (materials().length === 0) {
+      <p class="no-materials">Aucun matériau requis</p>
+      } @else {
+      <div class="materials-list">
+        @for (material of materials(); track material.item_wakfu_id) {
+        <div
+          class="material-item"
+          [class.resource]="material.is_resource"
+          (click)="viewItem(material.item_wakfu_id)"
+        >
+          <div class="material-icon">
+            <img
+              [src]="getItemIconUrl(material.item_wakfu_id)"
+              [alt]="material.item_title"
+              loading="lazy"
+            />
+          </div>
+          <div class="material-info">
+            <div class="material-name">{{ material.item_title }}</div>
+            <div class="material-quantity">×{{ material.total_quantity }}</div>
+          </div>
+          <div class="material-badge">
+            {{ material.is_resource ? '🌿 Ressource' : '🔧 Craftable' }}
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+  }
+</div>

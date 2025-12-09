@@ -1,0 +1,73 @@
+<div class="recipe-detail-container">
+  <app-loading-spinner *ngIf="loading()" />
+  <app-error-message *ngIf="error()" [message]="error()!" />
+
+  @if (!loading() && !error() && recipeDetail()) {
+  <header class="page-header">
+    <button class="back-btn" (click)="goBack()">← Retour</button>
+
+    <div class="recipe-info">
+      @if (recipeDetail()!.results.length > 0) {
+      <h1>{{ recipeDetail()!.results[0].produced_item_title }}</h1>
+      } @else {
+      <h1>Recette #{{ recipeDetail()!.recipe.wakfu_id }}</h1>
+      }
+      <div class="recipe-meta">
+        <span class="level-badge">Niveau {{ recipeDetail()!.recipe.level }}</span>
+      </div>
+    </div>
+
+    <button class="calculator-btn" (click)="openCalculator()">🧮 Ouvrir le calculateur</button>
+  </header>
+
+  <div class="recipe-content">
+    <!-- Ingrédients -->
+    <div class="section">
+      <h2>Ingrédients requis</h2>
+      @if (recipeDetail()!.ingredients.length === 0) {
+      <p class="no-data">Aucun ingrédient</p>
+      } @else {
+      <div class="items-grid">
+        @for (ingredient of recipeDetail()!.ingredients; track ingredient.id) {
+        <div class="item-card" (click)="viewItem(ingredient.item_wakfu_id)">
+          <div class="item-icon">
+            <img
+              [src]="getItemIconUrl(ingredient.item_wakfu_id)"
+              [alt]="ingredient.item_title"
+              loading="lazy"
+            />
+            <span class="item-quantity">×{{ ingredient.quantity }}</span>
+          </div>
+          <div class="item-name">{{ ingredient.item_title }}</div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+
+    <!-- Résultats -->
+    <div class="section">
+      <h2>Résultats de craft</h2>
+      @if (recipeDetail()!.results.length === 0) {
+      <p class="no-data">Aucun résultat</p>
+      } @else {
+      <div class="items-grid">
+        @for (result of recipeDetail()!.results; track result.id) {
+        <div class="item-card result" (click)="viewItem(result.produced_item_wakfu_id)">
+          <div class="item-icon">
+            <img
+              [src]="getItemIconUrl(result.produced_item_wakfu_id)"
+              [alt]="result.produced_item_title"
+              loading="lazy"
+            />
+            <span class="item-quantity success">×{{ result.quantity }}</span>
+          </div>
+          <div class="item-name">{{ result.produced_item_title }}</div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+  }
+</div>

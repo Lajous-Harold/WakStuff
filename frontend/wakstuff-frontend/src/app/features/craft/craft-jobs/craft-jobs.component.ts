@@ -1,10 +1,10 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { RecipesService } from '../../core/services/recipes.service';
-import { RecipeCategory } from '../../core/models/recipe.model';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
-import { ErrorMessageComponent } from '../../shared/components/error-message/error-message.component';
+import { RecipesService } from '../../../core/services/recipes.service';
+import { RecipeCategory } from '../../../core/models/recipe.model';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { ErrorMessageComponent } from '../../../shared/components/error-message/error-message.component';
 
 @Component({
   selector: 'app-craft-jobs',
@@ -20,21 +20,18 @@ export class CraftJobsComponent implements OnInit {
 
   // Icônes personnalisées par métier
   jobIcons: Record<string, string> = {
-    'Boulanger': '🍞',
-    'Trappeur': '🪤',
-    'Cuisinier': '🍳',
-    'Armurier': '⚔️',
-    'Bijoutier': '💎',
-    'Tailleur': '🧵',
-    'Maroquinier': '👜',
-    'Ébéniste': '🪑',
+    Boulanger: '🍞',
+    Trappeur: '🪤',
+    Cuisinier: '🍳',
+    Armurier: '⚔️',
+    Bijoutier: '💎',
+    Tailleur: '🧵',
+    Maroquinier: '👜',
+    Ébéniste: '🪑',
     "Maitre d'Armes": '⚒️',
   };
 
-  constructor(
-    private recipesService: RecipesService,
-    private router: Router
-  ) {}
+  constructor(private recipesService: RecipesService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadCraftJobs();
@@ -44,13 +41,10 @@ export class CraftJobsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.recipesService.getCategories().subscribe({
+    // Ajouter le paramètre category_type=craft pour filtrer côté backend
+    this.recipesService.getCategories('craft').subscribe({
       next: (response) => {
-        // Filtrer uniquement les métiers de craft
-        const craftCategories = response.categories.filter(
-          (c: RecipeCategory) => c.category_type === 'craft'
-        );
-        this.craftJobs.set(craftCategories);
+        this.craftJobs.set(response.categories);
         this.loading.set(false);
       },
       error: (err) => {

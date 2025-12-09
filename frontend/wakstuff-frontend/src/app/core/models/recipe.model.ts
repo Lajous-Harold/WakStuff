@@ -4,8 +4,9 @@ export interface Recipe {
   level: number;
   recipe_category_id: number;
   recipe_category_name?: string;
-  name?: string; // Nom de la recette (optionnel dans les listes)
+  name?: string; // Nom de l'item produit
   title?: string; // Alias de name
+  item_wakfu_id?: number; // ID de l'item produit par cette recette
 }
 
 export interface RecipeIngredient {
@@ -38,24 +39,6 @@ export interface RecipesListResponse {
   page: number;
   per_page: number;
   total_pages: number;
-}
-
-export interface CraftTreeNode {
-  item_wakfu_id: number;
-  item_name: string;
-  quantity_needed: number;
-  is_resource: boolean;
-  can_craft: boolean;
-  recipe_wakfu_id?: number;
-  recipe_level?: number;
-  recipe_category_id?: number;
-  ingredients?: CraftTreeNode[];
-  depth: number;
-}
-
-export interface CraftTreeResponse {
-  recipe: Recipe | null;
-  craft_tree: CraftTreeNode;
 }
 
 export interface RecipeCategory {

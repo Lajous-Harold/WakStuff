@@ -4,10 +4,12 @@ export interface CraftTreeNode {
   item_title: string;
   quantity: number;
   level: number;
-  is_resource: boolean; // true si ressource primordiale (non-craftable)
+  is_resource: boolean;
   recipe_wakfu_id?: number;
-  children: CraftTreeNode[]; // Ingrédients nécessaires (récursif)
-  user_has?: boolean; // Marqué par l'utilisateur comme possédé
+  children: CraftTreeNode[];
+  user_has?: boolean;
+  max_depth_reached?: boolean;
+  cycle_detected?: boolean;
 }
 
 export interface CraftTreeResponse {
@@ -16,6 +18,6 @@ export interface CraftTreeResponse {
     wakfu_id: number;
     level: number;
     recipe_category_id: number;
-  };
+  } | null;
   craft_tree: CraftTreeNode;
 }

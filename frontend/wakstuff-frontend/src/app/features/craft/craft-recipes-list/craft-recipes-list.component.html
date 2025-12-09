@@ -1,0 +1,87 @@
+<div class="recipes-list-container">
+  <header class="page-header">
+    <button class="back-btn" (click)="goBack()">← Retour aux métiers</button>
+    @if (category()) {
+    <h1>{{ category()!.name }}</h1>
+    <p class="subtitle">{{ totalItems() }} recettes disponibles</p>
+    }
+  </header>
+
+  <!-- Filtres -->
+  <div class="filters-section">
+    <app-search-bar
+      placeholder="Rechercher une recette..."
+      [debounceTime]="500"
+      (search)="onSearch($event)"
+    />
+
+    <div class="level-filters">
+      <div class="filter-group">
+        <label for="min-level">Niveau min</label>
+        <input
+          type="number"
+          id="min-level"
+          [value]="minLevel()"
+          (input)="minLevel.set($any($event.target).value ? +$any($event.target).value : null)"
+          (change)="onLevelFilterChange()"
+          min="1"
+          max="230"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="max-level">Niveau max</label>
+        <input
+          type="number"
+          id="max-level"
+          [value]="maxLevel()"
+          (input)="maxLevel.set($any($event.target).value ? +$any($event.target).value : null)"
+          (change)="onLevelFilterChange()"
+          min="1"
+          max="230"
+        />
+      </div>
+
+      @if (minLevel() || maxLevel()) {
+      <button class="clear-filters-btn" (click)="clearLevelFilters()">Effacer</button>
+      }
+    </div>
+  </div>
+
+  <app-loading-spinner *ngIf="loading()" />
+  <app-error-message *ngIf="error()" [message]="error()!" />
+
+  @if (!loading() && !error()) { @if (recipes().length === 0) {
+  <div class="empty-state">
+    <p>Aucune recette trouvée</p>
+  </div>
+  } @else {
+  <div class="recipes-grid">
+    @for (recipe of recipes(); track recipe.wakfu_id) {
+    <div class="recipe-card" (click)="viewRecipeDetail(recipe.wakfu_id)">
+      <div class="recipe-header">
+        <span class="recipe-level">Niv. {{ recipe.level }}</span>
+        @if (recipe.item_wakfu_id) {
+        <button
+          class="calc-btn"
+          (click)="openCalculator(recipe.item_wakfu_id, $event)"
+          title="Calculateur"
+        >
+          🧮
+        </button>
+        }
+      </div>
+      <h3 class="recipe-name">
+        {{ recipe.name || recipe.title || 'Recette #' + recipe.wakfu_id }}
+      </h3>
+    </div>
+    }
+  </div>
+
+  <app-pagination
+    [config]="paginationConfig()"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+  />
+  } }
+</div>

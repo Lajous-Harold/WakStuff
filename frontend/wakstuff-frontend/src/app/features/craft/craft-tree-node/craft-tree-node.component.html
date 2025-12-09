@@ -1,0 +1,52 @@
+<div class="tree-node" [class.collapsed]="collapsed()" [class.owned]="isOwned">
+  <div class="node-content" (click)="toggleCollapse()">
+    <div class="node-icon">
+      <img [src]="getItemIconUrl(node.item_wakfu_id)" [alt]="node.item_title" loading="lazy" />
+      <span class="node-quantity">×{{ node.quantity }}</span>
+    </div>
+
+    <div class="node-info">
+      <div class="node-name">{{ node.item_title }}</div>
+      <div class="node-meta">
+        @if (node.level) {
+        <span class="level-badge">Niv. {{ node.level }}</span>
+        } @if (node.is_resource) {
+        <span class="resource-badge">🌿 Ressource</span>
+        } @else {
+        <span class="craft-badge">🔧 Craftable</span>
+        } @if (node.children && node.children.length > 0) {
+        <span class="ingredients-count"> {{ node.children.length }} ingrédients </span>
+        }
+      </div>
+    </div>
+
+    <div class="node-actions">
+      <button
+        class="owned-btn"
+        [class.active]="isOwned"
+        (click)="onToggleOwned($event)"
+        title="Marquer comme possédé"
+      >
+        {{ isOwned ? '✓ Possédé' : 'Pas possédé' }}
+      </button>
+
+      @if (node.children && node.children.length > 0) {
+      <button class="collapse-btn" title="Replier/Déplier">
+        {{ collapsed() ? '▶' : '▼' }}
+      </button>
+      }
+    </div>
+  </div>
+
+  @if (node.children && node.children.length > 0 && !collapsed()) {
+  <div class="node-children">
+    @for (child of node.children; track child.item_wakfu_id) {
+    <app-craft-tree-node
+      [node]="child"
+      [ownedItems]="ownedItems"
+      (toggleOwned)="toggleOwned.emit($event)"
+    />
+    }
+  </div>
+  }
+</div>

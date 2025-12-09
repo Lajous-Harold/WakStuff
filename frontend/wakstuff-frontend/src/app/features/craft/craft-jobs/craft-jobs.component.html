@@ -8,13 +8,13 @@
   <app-error-message *ngIf="error()" [message]="error()!" />
 
   @if (!loading() && !error()) {
-    <div class="jobs-grid">
-      @for (job of craftJobs(); track job.id) {
-        <div class="job-card" (click)="navigateToJob(job.id)">
-          <div class="job-icon">{{ getJobIcon(job.name) }}</div>
-          <h3 class="job-name">{{ job.name }}</h3>
-        </div>
-      }
+  <div class="jobs-grid">
+    @for (job of craftJobs(); track job.id) {
+    <div class="job-card" (click)="navigateToJob(job.id)">
+      <div class="job-icon">{{ getJobIcon(job.name) }}</div>
+      <h3 class="job-name">{{ job.name }}</h3>
     </div>
+    }
+  </div>
   }
 </div>

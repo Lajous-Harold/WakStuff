@@ -8,6 +8,7 @@ export type {
   RecipeResult,
   RecipeDetail,
   RecipesListResponse,
+  RecipeCategory,
 } from './recipe.model';
 export * from './craft-tree.model';
 export * from './job.model';

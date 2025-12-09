@@ -4,7 +4,7 @@ Routes API pour les recettes et le craft.
 from flask import Blueprint, jsonify, request
 from sqlalchemy import and_
 from ..database import db
-from ..models import Recipe, RecipeIngredient, RecipeResult, RecipeCategory
+from ..models import Recipe, RecipeIngredient, RecipeResult, RecipeCategory, Item
 from ..utils.craft_tree import build_craft_tree
 
 bp = Blueprint('recipes', __name__)
@@ -48,8 +48,28 @@ def get_recipes():
     query = query.order_by(Recipe.level.desc(), Recipe.wakfu_id)
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     
+    # Enrichir chaque recette avec le nom de l'item produit
+    recipes_with_names = []
+    for recipe in pagination.items:
+        recipe_dict = recipe.to_dict()
+        
+        # Trouver l'item produit par cette recette
+        result = RecipeResult.query.filter_by(recipe_wakfu_id=recipe.wakfu_id).first()
+        if result:
+            item = Item.query.filter_by(wakfu_id=result.producted_item_id).first()
+            if item:
+                item_dict = item.to_dict(lang='fr')
+                recipe_dict['name'] = item_dict.get('title', f'Recette #{recipe.wakfu_id}')
+                recipe_dict['item_wakfu_id'] = result.producted_item_id
+            else:
+                recipe_dict['name'] = f'Recette #{recipe.wakfu_id}'
+        else:
+            recipe_dict['name'] = f'Recette #{recipe.wakfu_id}'
+        
+        recipes_with_names.append(recipe_dict)
+    
     return jsonify({
-        'recipes': [r.to_dict() for r in pagination.items],
+        'recipes': recipes_with_names,
         'total': pagination.total,
         'page': page,
         'per_page': per_page,
@@ -62,20 +82,48 @@ def get_recipe_detail(wakfu_id):
     """
     GET /api/recipes/<wakfu_id>
     
-    Détails d'une recette avec ingrédients et résultats.
+    Détails d'une recette avec ingrédients et résultats enrichis.
     """
     recipe = Recipe.query.filter_by(wakfu_id=wakfu_id).first_or_404()
     
-    # Récupérer les ingrédients
+    # Récupérer les ingrédients et enrichir avec les noms
     ingredients = RecipeIngredient.query.filter_by(recipe_wakfu_id=wakfu_id).all()
+    ingredients_list = []
+    for ing in ingredients:
+        ing_dict = ing.to_dict()
+        # Enrichir avec le nom de l'item
+        item = Item.query.filter_by(wakfu_id=ing.item_id).first()
+        if item:
+            item_dict = item.to_dict(lang='fr')
+            ing_dict['item_title'] = item_dict.get('title', f'Item #{ing.item_id}')
+            ing_dict['item_wakfu_id'] = ing.item_id
+        else:
+            ing_dict['item_title'] = f'Item #{ing.item_id}'
+            ing_dict['item_wakfu_id'] = ing.item_id
+        ingredients_list.append(ing_dict)
     
-    # Récupérer les résultats
+    # Récupérer les résultats et enrichir avec les noms
     results = RecipeResult.query.filter_by(recipe_wakfu_id=wakfu_id).all()
+    results_list = []
+    for res in results:
+        res_dict = res.to_dict()
+        # Enrichir avec le nom de l'item produit
+        item = Item.query.filter_by(wakfu_id=res.producted_item_id).first()
+        if item:
+            item_dict = item.to_dict(lang='fr')
+            res_dict['produced_item_title'] = item_dict.get('title', f'Item #{res.producted_item_id}')
+            res_dict['produced_item_wakfu_id'] = res.producted_item_id
+            res_dict['quantity'] = res.producted_item_quantity
+        else:
+            res_dict['produced_item_title'] = f'Item #{res.producted_item_id}'
+            res_dict['produced_item_wakfu_id'] = res.producted_item_id
+            res_dict['quantity'] = res.producted_item_quantity
+        results_list.append(res_dict)
     
     return jsonify({
         'recipe': recipe.to_dict(),
-        'ingredients': [ing.to_dict() for ing in ingredients],
-        'results': [res.to_dict() for res in results]
+        'ingredients': ingredients_list,
+        'results': results_list
     })
 
 

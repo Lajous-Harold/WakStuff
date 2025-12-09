@@ -102,7 +102,7 @@ def build_craft_tree(item_wakfu_id: int, quantity: int = 1, max_depth: int = 10,
         }
     
     # Calculer combien de crafts sont nécessaires
-    produced_qty = recipe_result.quantity or 1
+    produced_qty = recipe_result.producted_item_quantity or 1
     crafts_needed = (quantity + produced_qty - 1) // produced_qty  # Arrondi supérieur
     
     # Construire le nœud craftable
