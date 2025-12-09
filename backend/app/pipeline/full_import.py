@@ -636,14 +636,18 @@ def run_full_wakfu_import(batch: Optional[ImportBatch] = None) -> ImportBatch:
         stats["phase_2"]["resources"] = import_resources()
         stats["phase_2"]["collectable_resources"] = import_collectable_resources()
         stats["phase_2"]["harvest_loots"] = import_harvest_loots()
-        stats["phase_2"]["harvest_resources"] = rebuild_harvest_resources()
         phase_2_total = sum(stats["phase_2"].values())
-        logger.info(f"✅ Phase 2 terminée: {phase_2_total} entrées")
+        logger.info(f"✅ Phase 2 terminée: {phase_2_total} entrées (harvest_resources sera construit après JobItem)")
         
         # PHASE 3
         logger.info("\n🔷 PHASE 3: ITEMS ET JOBITEMS")
         stats["phase_3"]["job_items"] = import_job_items()
         stats["phase_3"]["items"] = import_items()
+        
+        # Construire harvest_resources APRÈS avoir JobItem disponible
+        logger.info("Phase 3.3: Construction de harvest_resources...")
+        stats["phase_3"]["harvest_resources"] = rebuild_harvest_resources()
+        
         phase_3_total = sum(stats["phase_3"].values())
         logger.info(f"✅ Phase 3 terminée: {phase_3_total} entrées")
         

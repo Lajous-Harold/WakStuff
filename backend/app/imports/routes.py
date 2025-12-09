@@ -10,8 +10,7 @@ from ..pipeline.full_import import (
     run_full_wakfu_import,
     get_import_stats,
     clear_all_data,
-    clear_all_data_and_history,
-    rebuild_harvest_resources
+    clear_all_data_and_history
 )
 import logging
 
@@ -233,38 +232,4 @@ def clear_history():
         }), 500
 
 
-@bp.route('/rebuild-harvest-resources', methods=['POST'])
-def rebuild_harvest_resources_endpoint():
-    """
-    Reconstruit la table harvest_resources à partir des données existantes.
-    
-    POST /api/imports/rebuild-harvest-resources
-    
-    Cette table est une vue consolidée qui relie:
-    - HarvestLoot (items droppés)
-    - JobItem (informations item)
-    - CollectibleResource (métier/skill requis)
-    
-    Retourne:
-    {
-        "status": "success",
-        "count": 452,
-        "message": "452 HarvestResource reconstruits"
-    }
-    """
-    try:
-        logger.info("Reconstruction de harvest_resources...")
-        count = rebuild_harvest_resources()
-        
-        return jsonify({
-            "status": "success",
-            "count": count,
-            "message": f"{count} HarvestResource reconstruits"
-        }), 200
-        
-    except Exception as e:
-        logger.error(f"Erreur lors de la reconstruction: {e}", exc_info=True)
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
+
