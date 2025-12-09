@@ -1,6 +1,7 @@
 // Export centralisé de tous les modèles
 export * from './item.model';
 export * from './resource.model';
+export * from './harvest.model';
 export type {
   Recipe as RecipeModel,
   RecipeIngredient,

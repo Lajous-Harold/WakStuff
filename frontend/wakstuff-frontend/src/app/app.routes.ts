@@ -53,6 +53,15 @@ export const routes: Routes = [
       ),
   },
 
+  // Harvest Resources
+  {
+    path: 'harvest',
+    loadComponent: () =>
+      import('./features/harvest/harvest-resources.component').then(
+        (m) => m.HarvestResourcesComponent
+      ),
+  },
+
   // Crafting
   {
     path: 'craft',
