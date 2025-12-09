@@ -6,7 +6,11 @@ import { ImportStatusService } from '../../../core/services/import-status.servic
 import { ItemDetail } from '../../../core/models';
 import { LoadingSpinnerComponent, ErrorMessageComponent } from '../../../shared/components';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
-import { cleanWakfuText, getRarityColorClass } from '../../../shared/utils';
+import {
+  cleanWakfuText,
+  cleanWakfuStatDescription,
+  getRarityColorClass,
+} from '../../../shared/utils';
 import { environment } from '../../../core/config';
 
 @Component({
@@ -129,6 +133,10 @@ export class ItemDetailsComponent implements OnInit {
     return cleanWakfuText(text);
   }
 
+  cleanStatLabel(label: string | null | undefined): string {
+    return cleanWakfuStatDescription(label);
+  }
+
   isExclusiveProperty(wakfuId: number): boolean {
     // Properties 8 et 12 sont les propriétés exclusives (Relique/Épique)
     return wakfuId === 8 || wakfuId === 12;
@@ -155,14 +163,11 @@ export class ItemDetailsComponent implements OnInit {
   }
 
   formatStatValue(stat: { value: number; action_id: number }): string {
-    // Les actionIds en pourcentage
-    const percentageActions = [149, 875]; // CritChance, BlockPercent
-
-    if (percentageActions.includes(stat.action_id)) {
-      return `${stat.value > 0 ? '+' : ''}${stat.value} %`;
+    // Formater simplement la valeur (le label contient déjà l'unité si nécessaire)
+    if (stat.value > 0) {
+      return `+${stat.value}`;
     }
-
-    return `${stat.value > 0 ? '+' : ''}${stat.value}`;
+    return `${stat.value}`;
   }
 
   getJobTypeName(jobItem: any): string {

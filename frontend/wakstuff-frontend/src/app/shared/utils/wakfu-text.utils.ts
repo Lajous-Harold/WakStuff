@@ -13,6 +13,17 @@ export function cleanWakfuText(text: string | null | undefined): string {
 }
 
 /**
+ * Cleans Wakfu stat descriptions by removing UI metadata tags
+ * Removes [#charac XXX] tags which are UI positioning metadata
+ * Example: "[#charac HP] 177 PV" -> "177 PV"
+ */
+export function cleanWakfuStatDescription(text: string | null | undefined): string {
+  if (!text) return '';
+  // Remove [#charac XXX] metadata tags
+  return text.replace(/\[#charac [^\]]+\]\s*/g, '').trim();
+}
+
+/**
  * Extracts and cleans title from multilingual object
  * Priority: fr > en > es > pt
  */

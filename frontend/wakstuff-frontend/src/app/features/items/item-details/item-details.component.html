@@ -81,13 +81,12 @@
         <div class="stats-grid">
           @for (stat of getStatisticsArray(); track stat.key) {
           <div class="stat-item">
-            <span class="stat-label">{{ stat.stat.label }}</span>
             <span
-              class="stat-value"
+              class="stat-full"
               [class.positive]="stat.stat.value > 0"
               [class.negative]="stat.stat.value < 0"
             >
-              {{ formatStatValue(stat.stat) }}
+              {{ cleanStatLabel(stat.stat.label) }}
             </span>
           </div>
           }

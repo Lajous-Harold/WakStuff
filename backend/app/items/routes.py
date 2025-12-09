@@ -194,127 +194,146 @@ def get_item_detail(wakfu_id):
         item_dict['equip_effects_enriched'] = enrich_effects(item.equip_effects)
     
     # 5. EXTRAIRE ET ENRICHIR LES STATISTIQUES DE L'ÉQUIPEMENT
+    def parse_action_description(action, params):
+        """
+        Parse la description Wakfu avec placeholders et retourne le label final.
+        Exemples de placeholders:
+        - [#1] = params[0] (première valeur)
+        - [#2] = params[1] (deuxième valeur)
+        - [#charac XXX] = ignoré (métadonnée UI)
+        - {[~3]?texte1:texte2} = condition ternaire
+        Le signe (+/-) est déjà défini dans la description selon l'actionId.
+        """
+        if not action or not action.description:
+            return None
+            
+        desc = action.description.get('fr', '')
+        if not desc:
+            return None
+        
+        import re
+        
+        # Supprimer les tags [#charac XXX]
+        desc = re.sub(r'\[#charac [^\]]+\]\s*', '', desc)
+        
+        # Remplacer [#1], [#2], etc. par les valeurs des params
+        for i, param_value in enumerate(params, start=1):
+            placeholder = f'[#{i}]'
+            # Formater la valeur (entier si possible, sinon float)
+            int_value = int(param_value) if param_value == int(param_value) else param_value
+            desc = desc.replace(placeholder, str(int_value))
+        
+        # Gérer les conditions ternaires complexes {[condition]?vrai:faux}
+        # Simplification: on prend la partie principale
+        desc = re.sub(r'\{[^\}]*\?([^:]+):[^\}]*\}', r'\1', desc)
+        desc = re.sub(r'\{[^\}]*\}', '', desc)
+        
+        # Nettoyer les espaces multiples
+        desc = re.sub(r'\s+', ' ', desc).strip()
+        
+        return desc if desc else None
+    
     stats = {}
     if item.equip_effects:
         for effect in item.equip_effects:
             if isinstance(effect, dict):
-                # Les effets sont dans effect.effect.definition
-                effect_def = effect.get('effect', {}).get('definition', {})
+                # Les effets sont dans effect.effect
+                effect_data = effect.get('effect', {})
+                effect_def = effect_data.get('definition', {})
                 action_id = effect_def.get('actionId')
-                params = effect_def.get('params', [])
+                params_str = effect_def.get('params', '')
                 
-                # Mapper les actions vers les statistiques
-                stat_mapping = {
-                    # Stats de base
-                    20: {'name': 'HP', 'label': 'Point de vie (PV)'},
-                    21: {'name': 'HP', 'label': 'Point de vie (PV)'},  # Debuff
-                    26: {'name': 'HealMastery', 'label': 'Maîtrise Soin'},
-                    31: {'name': 'AP', 'label': 'PA'},
-                    39: {'name': 'CharacGain', 'label': 'Gain paramétré'},
-                    40: {'name': 'CharacLoss', 'label': 'Perte paramétrée'},
-                    41: {'name': 'MP', 'label': 'PM'},
-                    56: {'name': 'Initiative', 'label': 'Initiative'},
-                    57: {'name': 'MPMaxDebuff', 'label': 'PM max'},
-                    66: {'name': 'Range', 'label': 'Portée'},
-                    71: {'name': 'RearResBase2', 'label': 'Résistance Dos'},
-                    80: {'name': 'WP', 'label': 'PW'},
-                    82: {'name': 'FireResPercent', 'label': 'Résistance Feu'},
-                    83: {'name': 'ElementalResBase', 'label': 'Résistance'},
-                    84: {'name': 'EarthResBase', 'label': 'Résistance Terre'},
-                    85: {'name': 'WaterResBase', 'label': 'Résistance Eau'},
-                    90: {'name': 'ElementalResDebuff', 'label': 'Résistance Élémentaire'},
-                    96: {'name': 'Dodge', 'label': 'Esquive'},
-                    97: {'name': 'Lock', 'label': 'Tacle'},
-                    98: {'name': 'WaterResDebuffNoCap', 'label': 'Résistance Eau'},
-                    100: {'name': 'ElementalResDebuffNoCap', 'label': 'Résistance Élémentaire'},
-                    120: {'name': 'ElementalMasteryBase', 'label': 'Maîtrise Élémentaire'},
-                    122: {'name': 'Wisdom', 'label': 'Sagesse'},
-                    123: {'name': 'EarthMasteryBase', 'label': 'Maîtrise Terre'},
-                    124: {'name': 'Prospecting', 'label': 'Prospection'},
-                    125: {'name': 'AirMasteryBase', 'label': 'Maîtrise Air'},
-                    130: {'name': 'Control', 'label': 'Contrôle'},
-                    132: {'name': 'FireMasteryDebuff', 'label': 'Maîtrise Feu'},
-                    149: {'name': 'CritChance', 'label': '% Coup critique'},
-                    150: {'name': 'Block', 'label': 'Parade'},
-                    160: {'name': 'CritMastery', 'label': 'Maîtrise Critique'},
-                    161: {'name': 'RangeDebuff', 'label': 'Portée'},
-                    162: {'name': 'RearMastery', 'label': 'Maîtrise Dos'},
-                    166: {'name': 'Heals', 'label': 'Soins'},
-                    168: {'name': 'CritChanceDebuff', 'label': '% Coup Critique'},
-                    171: {'name': 'RearRes', 'label': 'Résistance Dos'},
-                    172: {'name': 'InitiativeDebuff', 'label': 'Initiative'},
-                    173: {'name': 'CritRes', 'label': 'Résistance Critique'},
-                    174: {'name': 'LockDebuff', 'label': 'Tacle'},
-                    175: {'name': 'RearRes', 'label': 'Résistance Dos'},  # Alias
-                    176: {'name': 'DodgeDebuff', 'label': 'Esquive'},
-                    177: {'name': 'Willpower', 'label': 'Volonté'},
-                    180: {'name': 'APRes', 'label': 'Résistance PA'},
-                    181: {'name': 'RearMasteryDebuff', 'label': 'Maîtrise Dos'},
-                    184: {'name': 'MPRes', 'label': 'Résistance PM'},
-                    191: {'name': 'WPRes', 'label': 'Résistance PW'},
-                    192: {'name': 'WPMaxDebuff', 'label': 'PW max'},
-                    304: {'name': 'ApplyState', 'label': 'Applique état'},
-                    400: {'name': 'NullEffect', 'label': 'Effet vide'},
-                    875: {'name': 'BlockPercent', 'label': 'Parade'},
-                    876: {'name': 'BlockPercentDebuff', 'label': 'Parade'},
-                    988: {'name': 'CritResAlt', 'label': 'Résistance Critique'},
-                    2001: {'name': 'Unknown2001', 'label': 'Effet inconnu'},
+                # Parser les params (format: "177.0 0.0 1.0 0.0 0.0 0.0" ou liste)
+                params = []
+                if isinstance(params_str, str):
+                    params = [float(x) for x in params_str.split() if x]
+                elif isinstance(params_str, list):
+                    params = params_str
+                
+                # Utiliser la description enrichie depuis effect.description si disponible
+                effect_description = effect_data.get('description', {})
+                
+                if not action_id:
+                    continue
+                
+                # Priorité 1: Utiliser directement la description enrichie depuis l'effet (source Wakfu officielle)
+                # Cette description contient des placeholders [#1], [#2], etc. qu'il faut remplacer
+                # Le signe (+/-) est déjà défini dans la description selon l'actionId
+                label = None
+                if effect_description and 'fr' in effect_description:
+                    import re
+                    desc = effect_description['fr']
+                    
+                    # Supprimer les tags [#charac XXX] (métadonnées UI)
+                    desc = re.sub(r'\[#charac [^\]]+\]\s*', '', desc)
+                    
+                    # Remplacer les placeholders [#1], [#2], etc. par les valeurs des params SANS ajouter de signe
+                    for i, param_value in enumerate(params, start=1):
+                        placeholder = f'[#{i}]'
+                        # Formater la valeur (entier si possible, sinon float) - le signe est déjà dans la description
+                        int_value = int(param_value) if param_value == int(param_value) else param_value
+                        formatted_value = str(int_value)
+                        desc = desc.replace(placeholder, formatted_value)
+                    
+                    # Gérer les conditions ternaires simples {[~2]?%:} -> afficher % si params[1] est vrai
+                    desc = re.sub(r'\{[^\}]*\?([^:]*):([^\}]*)\}', r'\1', desc)
+                    
+                    label = desc
+                
+                # Priorité 2: Fallback sur la table Action en BDD
+                if not label:
+                    action = Action.query.filter_by(wakfu_id=action_id).first()
+                    if action:
+                        label = parse_action_description(action, params)
+                        
+                        # Si toujours pas de label, utiliser l'effet
+                        if not label or len(label) < 3:
+                            effect_text = action.effect or f"Action {action_id}"
+                            if ':' in effect_text:
+                                label = effect_text.split(':', 1)[1].strip()
+                            else:
+                                label = effect_text
+                    else:
+                        # Action inconnue
+                        label = f"Action {action_id}"
+                
+                # Générer un nom unique basé sur le label
+                import re
+                name = re.sub(r'[^a-zA-Z0-9]', '', label.replace(' ', '').replace(':', ''))
+                if not name:
+                    name = f"Action{action_id}"
+                
+                # Valeur de la stat (généralement le premier paramètre)
+                value = params[0] if params else 0
+                
+                # Cas spécial pour actionId 1068 (Maîtrise multi-éléments)
+                # Intégrer la valeur directement dans le label
+                if action_id == 1068 and len(params) >= 3:
+                    num_elements = int(params[2]) if params[2] else 3
+                    stat_value = int(params[0]) if params[0] == int(params[0]) else params[0]
+                    label = f"{stat_value} Maîtrise sur {num_elements} élément{'s' if num_elements > 1 else ''}"
+                    value = params[0]
+                
+                # Cas spécial pour actionId 1069 (Résistance multi-éléments)
+                # Intégrer la valeur directement dans le label
+                if action_id == 1069 and len(params) >= 3:
+                    num_elements = int(params[2]) if params[2] else 3
+                    stat_value = int(params[0]) if params[0] == int(params[0]) else params[0]
+                    label = f"{stat_value} Résistance sur {num_elements} élément{'s' if num_elements > 1 else ''}"
+                    value = params[0]
+                
+                # Gérer les doublons de nom
+                key = name
+                counter = 2
+                while key in stats and stats[key]['action_id'] != action_id:
+                    key = f"{name}_{counter}"
+                    counter += 1
+                
+                stats[key] = {
+                    'label': label,
+                    'value': int(value) if isinstance(value, (int, float)) else value,
+                    'action_id': action_id
                 }
-                
-                # Éléments (maîtrises et résistances)
-                element_mastery = {
-                    1020: {'name': 'FireMastery', 'label': 'Maîtrise Feu'},
-                    1021: {'name': 'FireRes', 'label': 'Résistance Feu'},
-                    1040: {'name': 'WaterMastery', 'label': 'Maîtrise Eau'},
-                    1041: {'name': 'WaterRes', 'label': 'Résistance Eau'},
-                    1052: {'name': 'MeleeMastery', 'label': 'Maîtrise Mêlée'},
-                    1053: {'name': 'RangedMastery', 'label': 'Maîtrise Distance'},
-                    1055: {'name': 'BerserkMastery', 'label': 'Maîtrise Berserk'},
-                    1056: {'name': 'CritMasteryDebuff', 'label': 'Maîtrise Critique'},
-                    1059: {'name': 'MeleeMasteryDebuff', 'label': 'Maîtrise Mêlée'},
-                    1060: {'name': 'EarthMastery', 'label': 'Maîtrise Terre'},
-                    1061: {'name': 'EarthRes', 'label': 'Résistance Terre'},
-                    1062: {'name': 'CritResDebuff', 'label': 'Résistance Critique'},
-                    1063: {'name': 'RearResDebuff', 'label': 'Résistance Dos'},
-                    1068: {'name': 'ElementMastery', 'label': 'Maîtrise sur 3 éléments'},
-                    1069: {'name': 'ElementalResVariable', 'label': 'Résistance Élémentaire variable'},
-                    1080: {'name': 'AirMastery', 'label': 'Maîtrise Air'},
-                    1081: {'name': 'AirRes', 'label': 'Résistance Air'},
-                }
-                
-                stat_info = stat_mapping.get(action_id) or element_mastery.get(action_id)
-                
-                if stat_info and params:
-                    # Valeur de la stat (généralement le premier paramètre)
-                    value = params[0] if isinstance(params, list) and len(params) > 0 else params
-                    
-                    # Pour les stats élémentaires multi-éléments (actionId 1068)
-                    if action_id == 1068 and isinstance(params, list) and len(params) >= 3:
-                        # params[2] indique le nombre d'éléments (3 dans l'exemple)
-                        num_elements = int(params[2]) if params[2] else 3
-                        stat_info = {
-                            'name': 'ElementMastery',
-                            'label': f'Maîtrise sur {num_elements} éléments'
-                        }
-                    
-                    stats[stat_info['name']] = {
-                        'label': stat_info['label'],
-                        'value': int(value) if isinstance(value, (int, float)) else value,
-                        'action_id': action_id
-                    }
-                    
-                    # Si le nom existe déjà, ajouter l'action_id pour le rendre unique
-                    key = stat_info['name']
-                    counter = 2
-                    while key in stats and stats[key]['action_id'] != action_id:
-                        key = f"{stat_info['name']}_{counter}"
-                        counter += 1
-                    
-                    stats[key] = {
-                        'label': stat_info['label'],
-                        'value': int(value) if isinstance(value, (int, float)) else value,
-                        'action_id': action_id
-                    }
     
     item_dict['statistics'] = stats
     
