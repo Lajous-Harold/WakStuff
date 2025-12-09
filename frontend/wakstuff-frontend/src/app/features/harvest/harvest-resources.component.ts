@@ -5,22 +5,39 @@ import { HarvestService } from '../../core/services/harvest.service';
 import { HarvestResource, HarvestJob } from '../../core/models/harvest.model';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorMessageComponent } from '../../shared/components/error-message/error-message.component';
+import {
+  PaginationComponent,
+  PaginationConfig,
+} from '../../shared/components/pagination/pagination.component';
+import { environment } from '../../core/config';
 
 @Component({
   selector: 'app-harvest-resources',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingSpinnerComponent, ErrorMessageComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LoadingSpinnerComponent,
+    ErrorMessageComponent,
+    PaginationComponent,
+  ],
   templateUrl: './harvest-resources.component.html',
   styleUrl: './harvest-resources.component.scss',
 })
 export class HarvestResourcesComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
-  
+
   resources = signal<HarvestResource[]>([]);
   selectedSkillId = signal<number | null>(null);
   searchQuery = signal('');
-  
+
+  // Pagination
+  currentPage = signal(1);
+  pageSize = signal(25);
+  totalItems = signal(0);
+  totalPages = signal(0);
+
   // Définition des métiers de récolte
   harvestJobs: HarvestJob[] = [
     { skill_id: 64, name: 'Paysan', icon: '🌾' },
@@ -32,20 +49,49 @@ export class HarvestResourcesComponent implements OnInit {
 
   // Ressources filtrées
   filteredResources = computed(() => {
-    let filtered = this.resources();
-    
+    const allResources = this.resources();
+
+    // Retourner un tableau vide si pas encore chargé
+    if (!allResources || allResources.length === 0) {
+      return [];
+    }
+
+    let filtered = [...allResources];
+
     // Filtre par métier
     if (this.selectedSkillId()) {
-      filtered = filtered.filter(r => r.skill_id === this.selectedSkillId());
+      filtered = filtered.filter((r) => r.skill_id === this.selectedSkillId());
     }
-    
+
     // Filtre par recherche
     const query = this.searchQuery().toLowerCase();
     if (query) {
-      filtered = filtered.filter(r => r.name.toLowerCase().includes(query));
+      filtered = filtered.filter((r) => r.name.toLowerCase().includes(query));
     }
-    
+
     return filtered.sort((a, b) => a.level - b.level);
+  });
+
+  // Resources paginées pour l'affichage
+  paginatedResources = computed(() => {
+    const filtered = this.filteredResources();
+    const start = (this.currentPage() - 1) * this.pageSize();
+    const end = start + this.pageSize();
+    return filtered.slice(start, end);
+  });
+
+  // Configuration de la pagination
+  paginationConfig = computed<PaginationConfig>(() => {
+    const filtered = this.filteredResources();
+    const total = filtered.length;
+    const pages = Math.ceil(total / this.pageSize());
+
+    return {
+      currentPage: this.currentPage(),
+      totalPages: pages,
+      pageSize: this.pageSize(),
+      totalItems: total,
+    };
   });
 
   constructor(private harvestService: HarvestService) {}
@@ -73,14 +119,27 @@ export class HarvestResourcesComponent implements OnInit {
 
   selectJob(skillId: number | null): void {
     this.selectedSkillId.set(skillId);
+    this.currentPage.set(1); // Réinitialiser la page
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage.set(page);
+    // Scroll vers le haut
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
+    this.currentPage.set(1); // Réinitialiser à la première page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   getJobName(skillId: number): string {
-    return this.harvestJobs.find(j => j.skill_id === skillId)?.name || 'Inconnu';
+    return this.harvestJobs.find((j) => j.skill_id === skillId)?.name || 'Inconnu';
   }
 
   getJobIcon(skillId: number): string {
-    return this.harvestJobs.find(j => j.skill_id === skillId)?.icon || '❓';
+    return this.harvestJobs.find((j) => j.skill_id === skillId)?.icon || '❓';
   }
 
   getRarityClass(rarity: number): string {
@@ -97,8 +156,9 @@ export class HarvestResourcesComponent implements OnInit {
     return rarityMap[rarity] || 'common';
   }
 
-  getIconUrl(iconId: number): string {
-    return `https://wakfu.cdn.ankama.com/gamedata/1.88.2/gfx/items/${iconId}.png`;
+  getIconUrl(iconGfxId: number): string {
+    if (!iconGfxId) return '';
+    return `${environment.apiUrl}/proxy/icon/${iconGfxId}`;
   }
 
   formatDropRate(rate: number): string {

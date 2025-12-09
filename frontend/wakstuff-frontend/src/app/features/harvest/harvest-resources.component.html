@@ -6,22 +6,18 @@
 
   <!-- Sélection du métier -->
   <div class="job-filters">
-    <button
-      class="job-btn"
-      [class.active]="selectedSkillId() === null"
-      (click)="selectJob(null)"
-    >
+    <button class="job-btn" [class.active]="selectedSkillId() === null" (click)="selectJob(null)">
       Tous les métiers
     </button>
     @for (job of harvestJobs; track job.skill_id) {
-      <button
-        class="job-btn"
-        [class.active]="selectedSkillId() === job.skill_id"
-        (click)="selectJob(job.skill_id)"
-      >
-        <span class="job-icon">{{ job.icon }}</span>
-        <span>{{ job.name }}</span>
-      </button>
+    <button
+      class="job-btn"
+      [class.active]="selectedSkillId() === job.skill_id"
+      (click)="selectJob(job.skill_id)"
+    >
+      <span class="job-icon">{{ job.icon }}</span>
+      <span>{{ job.name }}</span>
+    </button>
     }
   </div>
 
@@ -40,46 +36,45 @@
   <app-loading-spinner *ngIf="loading()" />
   <app-error-message *ngIf="error()" [message]="error()!" />
 
-  @if (!loading() && !error()) {
-    @if (filteredResources().length === 0) {
-      <div class="empty-state">
-        <p>Aucune ressource trouvée</p>
+  @if (!loading() && !error()) { @if (filteredResources().length === 0) {
+  <div class="empty-state">
+    <p>Aucune ressource trouvée</p>
+  </div>
+  } @else {
+  <div class="resources-grid">
+    @for (resource of paginatedResources(); track resource.item_id) {
+    <div class="resource-card" [class]="'rarity-' + getRarityClass(resource.rarity)">
+      <div class="resource-icon">
+        <img [src]="getIconUrl(resource.icon_gfx_id)" [alt]="resource.name" loading="lazy" />
       </div>
-    } @else {
-      <div class="resources-grid">
-        @for (resource of filteredResources(); track resource.item_id) {
-          <div class="resource-card" [class]="'rarity-' + getRarityClass(resource.rarity)">
-            <div class="resource-icon">
-              <img
-                [src]="getIconUrl(resource.icon_gfx_id)"
-                [alt]="resource.name"
-                loading="lazy"
-              />
-            </div>
-            <div class="resource-info">
-              <h3 class="resource-name">{{ resource.name }}</h3>
-              <div class="resource-meta">
-                <span class="meta-badge level">Niv. {{ resource.level }}</span>
-                <span class="meta-badge job">
-                  {{ getJobIcon(resource.skill_id) }} {{ getJobName(resource.skill_id) }}
-                </span>
-              </div>
-              <div class="resource-drops">
-                @if (resource.avg_drop_rate) {
-                  <span class="drop-rate">
-                    Taux moyen: {{ formatDropRate(resource.avg_drop_rate) }}
-                  </span>
-                }
-                @if (resource.min_drop_rate && resource.max_drop_rate) {
-                  <span class="drop-range">
-                    ({{ formatDropRate(resource.min_drop_rate) }} - {{ formatDropRate(resource.max_drop_rate) }})
-                  </span>
-                }
-              </div>
-            </div>
-          </div>
-        }
+      <div class="resource-info">
+        <h3 class="resource-name">{{ resource.name }}</h3>
+        <div class="resource-meta">
+          <span class="meta-badge level">Niv. {{ resource.level }}</span>
+          <span class="meta-badge job">
+            {{ getJobIcon(resource.skill_id) }} {{ getJobName(resource.skill_id) }}
+          </span>
+        </div>
+        <div class="resource-drops">
+          @if (resource.avg_drop_rate) {
+          <span class="drop-rate"> Taux moyen: {{ formatDropRate(resource.avg_drop_rate) }} </span>
+          } @if (resource.min_drop_rate && resource.max_drop_rate) {
+          <span class="drop-range">
+            ({{ formatDropRate(resource.min_drop_rate) }} -
+            {{ formatDropRate(resource.max_drop_rate) }})
+          </span>
+          }
+        </div>
       </div>
+    </div>
     }
-  }
+  </div>
+
+  <!-- Pagination -->
+  <app-pagination
+    [config]="paginationConfig()"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+  ></app-pagination>
+  } }
 </div>

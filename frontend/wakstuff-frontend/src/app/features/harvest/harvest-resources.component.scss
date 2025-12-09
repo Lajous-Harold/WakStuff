@@ -79,6 +79,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .resource-card {
@@ -96,13 +97,27 @@
   }
 
   // Couleurs de rareté
-  &.rarity-common { border-left: 4px solid #9ca3af; }
-  &.rarity-unusual { border-left: 4px solid #10b981; }
-  &.rarity-rare { border-left: 4px solid #3b82f6; }
-  &.rarity-mythical { border-left: 4px solid #8b5cf6; }
-  &.rarity-legendary { border-left: 4px solid #f59e0b; }
-  &.rarity-relic { border-left: 4px solid #ec4899; }
-  &.rarity-epic { border-left: 4px solid #ef4444; }
+  &.rarity-common {
+    border-left: 4px solid #9ca3af;
+  }
+  &.rarity-unusual {
+    border-left: 4px solid #10b981;
+  }
+  &.rarity-rare {
+    border-left: 4px solid #3b82f6;
+  }
+  &.rarity-mythical {
+    border-left: 4px solid #8b5cf6;
+  }
+  &.rarity-legendary {
+    border-left: 4px solid #f59e0b;
+  }
+  &.rarity-relic {
+    border-left: 4px solid #ec4899;
+  }
+  &.rarity-epic {
+    border-left: 4px solid #ef4444;
+  }
 }
 
 .resource-icon {

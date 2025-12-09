@@ -15,8 +15,11 @@ export interface HarvestResource {
 }
 
 export interface HarvestResourcesResponse {
-  resources: HarvestResource[];
+  harvest_resources: HarvestResource[];
   total: number;
+  page: number;
+  per_page: number;
+  pages: number;
 }
 
 export interface HarvestJob {
