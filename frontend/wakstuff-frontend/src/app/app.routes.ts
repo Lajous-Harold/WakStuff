@@ -66,6 +66,25 @@ export const routes: Routes = [
   {
     path: 'craft',
     loadComponent: () =>
+      import('./features/craft/craft-jobs/craft-jobs.component').then((m) => m.CraftJobsComponent),
+  },
+  {
+    path: 'craft/job/:categoryId',
+    loadComponent: () =>
+      import('./features/craft/craft-recipes-list/craft-recipes-list.component').then(
+        (m) => m.CraftRecipesListComponent
+      ),
+  },
+  {
+    path: 'craft/recipe/:wakfuId',
+    loadComponent: () =>
+      import('./features/craft/craft-recipe-detail/craft-recipe-detail.component').then(
+        (m) => m.CraftRecipeDetailComponent
+      ),
+  },
+  {
+    path: 'craft/calculator/:wakfuId',
+    loadComponent: () =>
       import('./features/craft/craft-calculator.component').then((m) => m.CraftCalculatorComponent),
   },
   {
