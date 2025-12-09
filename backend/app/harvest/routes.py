@@ -51,7 +51,7 @@ def get_harvest_resources():
     if level_max:
         query = query.filter(HarvestResource.level <= level_max)
     
-    query = query.order_by(HarvestResource.level, HarvestResource.item_wakfu_id)
+    query = query.order_by(HarvestResource.level, HarvestResource.item_id)
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     
     return jsonify({
@@ -71,19 +71,19 @@ def get_harvest_loots():
     Liste des loots de récolte.
     
     Query params:
-    - collect_loot_list_id: ID de la liste de loots
+    - list_id: ID de la liste de loots
     - item_id: ID de l'item dropé
     - page, per_page: Pagination
     """
-    collect_loot_list_id = request.args.get('collect_loot_list_id', type=int)
+    list_id = request.args.get('list_id', type=int)
     item_id = request.args.get('item_id', type=int)
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 100, type=int)
     
     query = HarvestLoot.query
     
-    if collect_loot_list_id:
-        query = query.filter(HarvestLoot.collect_loot_list_id == collect_loot_list_id)
+    if list_id:
+        query = query.filter(HarvestLoot.list_id == list_id)
     
     if item_id:
         query = query.filter(HarvestLoot.item_id == item_id)
