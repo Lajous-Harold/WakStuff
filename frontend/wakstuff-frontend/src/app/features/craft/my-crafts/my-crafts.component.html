@@ -1,0 +1,91 @@
+<div class="my-crafts-container">
+  <header class="page-header">
+    <h1>⭐ Mes Crafts Sauvegardés</h1>
+
+    <div class="header-actions">
+      <button class="import-btn" (click)="importFromFile()">📥 Importer JSON</button>
+      <button class="export-btn" (click)="exportAll()" [disabled]="craftLists().length === 0">
+        📤 Exporter JSON
+      </button>
+      <button class="clear-btn" (click)="clearAll()" [disabled]="craftLists().length === 0">
+        🗑️ Tout supprimer
+      </button>
+    </div>
+  </header>
+
+  @if (craftLists().length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h2>Aucune craft list sauvegardée</h2>
+    <p>Utilisez le calculateur de craft pour sauvegarder vos crafts favoris !</p>
+    <button class="cta-btn" routerLink="/craft">Aller au calculateur</button>
+  </div>
+  } @else {
+  <div class="crafts-stats">
+    <span class="stat">{{ craftLists().length }} craft list(s) sauvegardée(s)</span>
+  </div>
+
+  <div class="crafts-grid">
+    @for (craftList of craftLists(); track craftList.id) {
+    <div class="craft-card">
+      <div class="craft-header">
+        @if (craftList.recipeIconGfxId) {
+        <img
+          [src]="getItemIconUrl(craftList.recipeIconGfxId)"
+          [alt]="craftList.recipeName"
+          class="craft-icon"
+        />
+        }
+        <div class="craft-info">
+          <h3 class="craft-name" (click)="viewCraft(craftList)">{{ craftList.name }}</h3>
+          <p class="craft-recipe">{{ craftList.recipeName }}</p>
+        </div>
+      </div>
+
+      <div class="craft-details">
+        <div class="detail-row">
+          <span class="label">Quantité:</span>
+          <span class="value">{{ craftList.quantity }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Profondeur:</span>
+          <span class="value">{{ craftList.maxDepth }}</span>
+        </div>
+        @if (craftList.materials && craftList.materials.length > 0) {
+        <div class="detail-row">
+          <span class="label">Matériaux:</span>
+          <span class="value">{{ craftList.materials.length }} items</span>
+        </div>
+        }
+      </div>
+
+      <div class="craft-meta">
+        <small class="date">Créé le {{ formatDate(craftList.createdAt) }}</small>
+        @if (craftList.createdAt !== craftList.updatedAt) {
+        <small class="date">Modifié le {{ formatDate(craftList.updatedAt) }}</small>
+        }
+      </div>
+
+      <div class="craft-actions">
+        <button class="action-btn view-btn" (click)="viewCraft(craftList)" title="Ouvrir">
+          👁️
+        </button>
+        <button class="action-btn rename-btn" (click)="renameCraft(craftList)" title="Renommer">
+          ✏️
+        </button>
+        <button
+          class="action-btn duplicate-btn"
+          (click)="duplicateCraft(craftList)"
+          title="Dupliquer"
+        >
+          📋
+        </button>
+        <button class="action-btn delete-btn" (click)="deleteCraft(craftList)" title="Supprimer">
+          🗑️
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+  }
+</div>

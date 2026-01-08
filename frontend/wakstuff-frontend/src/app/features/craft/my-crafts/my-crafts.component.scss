@@ -1,0 +1,259 @@
+.my-crafts-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .import-btn {
+      background: #3b82f6;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #2563eb;
+      }
+    }
+
+    .export-btn {
+      background: #10b981;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #059669;
+      }
+    }
+
+    .clear-btn {
+      background: #ef4444;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #dc2626;
+      }
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: #6b7280;
+    margin-bottom: 2rem;
+  }
+
+  .cta-btn {
+    padding: 0.75rem 1.5rem;
+    background: #f59e0b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #d97706;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.crafts-stats {
+  margin-bottom: 1.5rem;
+
+  .stat {
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
+}
+
+.crafts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.craft-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .craft-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .craft-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: contain;
+      background: #f3f4f6;
+      padding: 4px;
+    }
+
+    .craft-info {
+      flex: 1;
+
+      .craft-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+        cursor: pointer;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #f59e0b;
+        }
+      }
+
+      .craft-recipe {
+        font-size: 0.875rem;
+        color: #6b7280;
+      }
+    }
+  }
+
+  .craft-details {
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .label {
+        font-size: 0.875rem;
+        color: #6b7280;
+      }
+
+      .value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1f2937;
+      }
+    }
+  }
+
+  .craft-meta {
+    margin-bottom: 1rem;
+
+    .date {
+      display: block;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  .craft-actions {
+    display: flex;
+    gap: 0.5rem;
+
+    .action-btn {
+      flex: 1;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+
+      &.view-btn {
+        background: #dbeafe;
+
+        &:hover {
+          background: #bfdbfe;
+        }
+      }
+
+      &.rename-btn {
+        background: #fef3c7;
+
+        &:hover {
+          background: #fde68a;
+        }
+      }
+
+      &.duplicate-btn {
+        background: #e0e7ff;
+
+        &:hover {
+          background: #c7d2fe;
+        }
+      }
+
+      &.delete-btn {
+        background: #fee2e2;
+
+        &:hover {
+          background: #fecaca;
+        }
+      }
+    }
+  }
+}
