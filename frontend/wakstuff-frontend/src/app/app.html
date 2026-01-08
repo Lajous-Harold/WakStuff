@@ -17,6 +17,15 @@
           <span class="nav-text">Dashboard</span>
         </a>
         <a
+          routerLink="/search"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="nav-link"
+        >
+          <span class="nav-icon">🔍</span>
+          <span class="nav-text">Recherche</span>
+        </a>
+        <a
           routerLink="/items"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: false }"
@@ -44,6 +53,15 @@
           <span class="nav-text">Récolte</span>
         </a>
         <a
+          routerLink="/harvest-optimizer"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="nav-link"
+        >
+          <span class="nav-icon">🗺️</span>
+          <span class="nav-text">Optimizer</span>
+        </a>
+        <a
           routerLink="/craft"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: false }"
@@ -53,6 +71,15 @@
           <span class="nav-text">Craft</span>
         </a>
         <a
+          routerLink="/craft/my-crafts"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="nav-link"
+        >
+          <span class="nav-icon">⭐</span>
+          <span class="nav-text">Mes Crafts</span>
+        </a>
+        <a
           routerLink="/imports"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: false }"
@@ -60,6 +87,15 @@
         >
           <span class="nav-icon">⚙️</span>
           <span class="nav-text">Imports</span>
+        </a>
+        <a
+          routerLink="/analytics"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="nav-link"
+        >
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Analytics</span>
         </a>
       </nav>
     </div>

@@ -14,6 +14,13 @@ export const routes: Routes = [
       import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
   },
 
+  // Search
+  {
+    path: 'search',
+    loadComponent: () =>
+      import('./features/search/search-page.component').then((m) => m.SearchPageComponent),
+  },
+
   // Imports
   {
     path: 'imports',
@@ -62,6 +69,24 @@ export const routes: Routes = [
       ),
   },
 
+  // Harvest Optimizer
+  {
+    path: 'harvest-optimizer',
+    loadComponent: () =>
+      import('./features/harvest-optimizer/harvest-optimizer.component').then(
+        (m) => m.HarvestOptimizerComponent
+      ),
+  },
+
+  // Analytics Dashboard
+  {
+    path: 'analytics',
+    loadComponent: () =>
+      import('./features/analytics-dashboard/analytics-dashboard.component').then(
+        (m) => m.AnalyticsDashboardComponent
+      ),
+  },
+
   // Crafting
   {
     path: 'craft',
@@ -88,6 +113,11 @@ export const routes: Routes = [
       import('./features/craft/craft-calculator/craft-calculator.component').then(
         (m) => m.CraftCalculatorComponent
       ),
+  },
+  {
+    path: 'craft/my-crafts',
+    loadComponent: () =>
+      import('./features/craft/my-crafts/my-crafts.component').then((m) => m.MyCraftsComponent),
   },
   {
     path: 'craft/:itemId',

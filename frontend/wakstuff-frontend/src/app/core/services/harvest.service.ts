@@ -14,6 +14,42 @@ export interface HarvestResourceFilters {
   per_page?: number;
 }
 
+export interface HarvestZone {
+  id: number;
+  name: string;
+  level_range: [number, number];
+  coordinates: { x: number; y: number };
+  skill_ids: number[];
+  resource_ids: number[];
+  description?: string;
+}
+
+export interface HarvestZonesResponse {
+  zones: HarvestZone[];
+  total: number;
+}
+
+export interface OptimizeRequest {
+  resource_ids: number[];
+  player_level: number;
+  max_zones?: number;
+}
+
+export interface RecommendedZone {
+  zone: HarvestZone;
+  efficiency: number;
+  matched_resources: number[];
+  distance_to_next?: number;
+}
+
+export interface OptimizeResponse {
+  recommended_zones: RecommendedZone[];
+  total_distance: number;
+  itinerary: string;
+  resources_covered: number;
+  resources_requested: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -46,5 +82,33 @@ export class HarvestService {
         total: response.total,
       }))
     );
+  }
+
+  getZones(filters?: {
+    level_min?: number;
+    level_max?: number;
+    skill_id?: number;
+    resource_ids?: number[];
+  }): Observable<HarvestZonesResponse> {
+    let params = new HttpParams();
+
+    if (filters?.level_min) {
+      params = params.set('level_min', filters.level_min.toString());
+    }
+    if (filters?.level_max) {
+      params = params.set('level_max', filters.level_max.toString());
+    }
+    if (filters?.skill_id) {
+      params = params.set('skill_id', filters.skill_id.toString());
+    }
+    if (filters?.resource_ids && filters.resource_ids.length > 0) {
+      params = params.set('resource_ids', filters.resource_ids.join(','));
+    }
+
+    return this.http.get<HarvestZonesResponse>(`${this.apiUrl}/zones`, { params });
+  }
+
+  optimizeRoute(request: OptimizeRequest): Observable<OptimizeResponse> {
+    return this.http.post<OptimizeResponse>(`${this.apiUrl}/optimize`, request);
   }
 }
