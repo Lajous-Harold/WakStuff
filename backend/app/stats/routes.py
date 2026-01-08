@@ -4,7 +4,7 @@ Routes API pour les statistiques et recherche globale.
 from flask import Blueprint, jsonify, request
 from sqlalchemy import func, or_
 from ..database import db
-from ..models import Item, Resource, Recipe, JobItem
+from ..models import Item, Resource, Recipe, JobItem, RecipeResult
 
 bp = Blueprint('stats', __name__)
 
@@ -80,17 +80,67 @@ def global_search():
         ).offset(offset).limit(limit).all()
         
         # Recherche dans recipes - via les items produits
-        recipes = Recipe.query.join(
-            Item, Recipe.wakfu_id == Item.wakfu_id
+        # D'abord chercher dans JobItem (priorité)
+        recipes_query_job = db.session.query(Recipe, JobItem).join(
+            RecipeResult, Recipe.wakfu_id == RecipeResult.recipe_wakfu_id
+        ).join(
+            JobItem, RecipeResult.producted_item_id == JobItem.wakfu_id
+        ).filter(
+            JobItem.title.cast(db.String).ilike(search_pattern)
+        ).offset(offset).limit(limit).all()
+        
+        # Puis chercher dans Item
+        recipes_query_item = db.session.query(Recipe, Item).join(
+            RecipeResult, Recipe.wakfu_id == RecipeResult.recipe_wakfu_id
+        ).join(
+            Item, RecipeResult.producted_item_id == Item.wakfu_id
         ).filter(
             Item.title.cast(db.String).ilike(search_pattern)
         ).offset(offset).limit(limit).all()
         
+        recipes_list = []
+        # Traiter JobItem results
+        for recipe, item in recipes_query_job:
+            recipe_dict = recipe.to_dict()
+            item_dict = item.to_dict(lang='fr')
+            title = item_dict.get('title', '').strip()
+            recipe_dict['title'] = title if title else f'Recette #{recipe.wakfu_id}'
+            recipe_dict['icon_gfx_id'] = item.icon_gfx_id if item.icon_gfx_id else item.wakfu_id
+            recipe_dict['produced_item_wakfu_id'] = item.wakfu_id
+            recipes_list.append(recipe_dict)
+        
+        # Traiter Item results
+        for recipe, item in recipes_query_item:
+            recipe_dict = recipe.to_dict()
+            item_dict = item.to_dict(lang='fr')
+            title = item_dict.get('title', '').strip()
+            recipe_dict['title'] = title if title else f'Recette #{recipe.wakfu_id}'
+            recipe_dict['icon_gfx_id'] = item.icon_gfx_id if item.icon_gfx_id else item.wakfu_id
+            recipe_dict['produced_item_wakfu_id'] = item.wakfu_id
+            recipes_list.append(recipe_dict)
+        
+        # Enrichir items et resources avec to_dict(lang='fr')
+        items_list = []
+        for item in items:
+            item_dict = item.to_dict(lang='fr')
+            # Assurer que icon_gfx_id est présent
+            if 'icon_gfx_id' not in item_dict or not item_dict['icon_gfx_id']:
+                item_dict['icon_gfx_id'] = item.wakfu_id
+            items_list.append(item_dict)
+        
+        resources_list = []
+        for res in resources:
+            res_dict = res.to_dict(lang='fr')
+            # Assurer que icon_gfx_id est présent
+            if 'icon_gfx_id' not in res_dict or not res_dict['icon_gfx_id']:
+                res_dict['icon_gfx_id'] = res.wakfu_id
+            resources_list.append(res_dict)
+        
         return jsonify({
-            'items': [item.to_dict() for item in items],
-            'resources': [res.to_dict() for res in resources],
-            'recipes': [recipe.to_dict() for recipe in recipes],
-            'total': len(items) + len(resources) + len(recipes),
+            'items': items_list,
+            'resources': resources_list,
+            'recipes': recipes_list,
+            'total': len(items) + len(resources) + len(recipes_list),
             'page': page,
             'per_page': limit
         })

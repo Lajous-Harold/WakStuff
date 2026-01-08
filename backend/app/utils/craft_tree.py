@@ -2,7 +2,7 @@
 Algorithme récursif pour construire l'arbre de craft d'un item.
 """
 from typing import Dict, List, Any, Set
-from ..models import Item, Recipe, RecipeIngredient, RecipeResult
+from ..models import Item, JobItem, Recipe, RecipeIngredient, RecipeResult
 from ..database import db
 
 
@@ -27,8 +27,11 @@ def build_craft_tree(item_wakfu_id: int, quantity: int = 1, max_depth: int = 10,
     if _visited is None:
         _visited = set()
     
-    # Récupérer l'item d'abord
-    item = Item.query.filter_by(wakfu_id=item_wakfu_id).first()
+    # Récupérer l'item d'abord - Chercher dans JobItem puis Item
+    item = JobItem.query.filter_by(wakfu_id=item_wakfu_id).first()
+    if not item:
+        item = Item.query.filter_by(wakfu_id=item_wakfu_id).first()
+    
     if not item:
         raise ValueError(f"Item {item_wakfu_id} not found")
     
@@ -42,6 +45,7 @@ def build_craft_tree(item_wakfu_id: int, quantity: int = 1, max_depth: int = 10,
             'item_id': item_wakfu_id,
             'item_wakfu_id': item_wakfu_id,
             'item_title': item_title,
+            'icon_gfx_id': item.icon_gfx_id if item.icon_gfx_id else item_wakfu_id,
             'quantity': quantity,
             'level': item_dict.get('level', 0),
             'is_resource': True,
@@ -56,6 +60,7 @@ def build_craft_tree(item_wakfu_id: int, quantity: int = 1, max_depth: int = 10,
             'item_id': item_wakfu_id,
             'item_wakfu_id': item_wakfu_id,
             'item_title': item_title,
+            'icon_gfx_id': item.icon_gfx_id if item.icon_gfx_id else item_wakfu_id,
             'quantity': quantity,
             'level': item_dict.get('level', 0),
             'is_resource': True,
@@ -77,6 +82,7 @@ def build_craft_tree(item_wakfu_id: int, quantity: int = 1, max_depth: int = 10,
             'item_id': item_wakfu_id,
             'item_wakfu_id': item_wakfu_id,
             'item_title': item_title,
+            'icon_gfx_id': item.icon_gfx_id if item.icon_gfx_id else item_wakfu_id,
             'quantity': quantity,
             'level': item_dict.get('level', 0),
             'is_resource': True,
@@ -94,6 +100,7 @@ def build_craft_tree(item_wakfu_id: int, quantity: int = 1, max_depth: int = 10,
             'item_id': item_wakfu_id,
             'item_wakfu_id': item_wakfu_id,
             'item_title': item_title,
+            'icon_gfx_id': item.icon_gfx_id if item.icon_gfx_id else item_wakfu_id,
             'quantity': quantity,
             'level': item_dict.get('level', 0),
             'is_resource': True,
@@ -110,6 +117,7 @@ def build_craft_tree(item_wakfu_id: int, quantity: int = 1, max_depth: int = 10,
         'item_id': item_wakfu_id,
         'item_wakfu_id': item_wakfu_id,
         'item_title': item_title,
+        'icon_gfx_id': item.icon_gfx_id if item.icon_gfx_id else item_wakfu_id,
         'quantity': quantity,
         'level': item_dict.get('level', 0),
         'is_resource': False,

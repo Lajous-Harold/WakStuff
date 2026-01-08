@@ -29,13 +29,16 @@ class DictSerializable:
                 result[column.name] = value.isoformat()
             elif isinstance(value, dict) and column.name in multilingual_fields:
                 # Extraire la langue demandée pour les champs multilingues
-                # Priorité: lang demandée > 'fr' > 'en' > première clé disponible
-                result[column.name] = (
-                    value.get(lang) or 
-                    value.get('fr') or 
-                    value.get('en') or 
-                    next(iter(value.values())) if value else ''
-                )
+                # Priorité: lang demandée > 'fr' > 'en' > première clé disponible > chaîne vide
+                if not value:  # Dict vide
+                    result[column.name] = ''
+                else:
+                    result[column.name] = (
+                        value.get(lang) or 
+                        value.get('fr') or 
+                        value.get('en') or 
+                        (next(iter(value.values()), '') if value else '')
+                    )
             else:
                 result[column.name] = value
         
