@@ -37,6 +37,8 @@ def get_items():
         rarity = request.args.get('rarity', type=int)
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
+        sort_by = request.args.get('sort_by', 'level')  # name, level, rarity, created_at
+        sort_order = request.args.get('sort_order', 'asc')  # asc, desc
         
         query = Item.query
         
@@ -82,7 +84,20 @@ def get_items():
         if rarity is not None:
             query = query.filter(Item.rarity == rarity)
         
-        query = query.order_by(Item.level.asc(), Item.wakfu_id)
+        # Tri
+        sort_column = Item.level  # default
+        if sort_by == 'name':
+            sort_column = Item.title
+        elif sort_by == 'rarity':
+            sort_column = Item.rarity
+        elif sort_by == 'created_at':
+            sort_column = Item.created_at
+        
+        if sort_order == 'desc':
+            query = query.order_by(sort_column.desc(), Item.wakfu_id)
+        else:
+            query = query.order_by(sort_column.asc(), Item.wakfu_id)
+        
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
         
         # Enrichir les items avec les titres des types
