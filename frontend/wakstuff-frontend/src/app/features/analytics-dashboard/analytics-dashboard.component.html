@@ -1,0 +1,167 @@
+<div class="analytics-container">
+  <header class="analytics-header">
+    <h1>📊 Tableau de Bord Analytique</h1>
+    <p class="subtitle">Statistiques et insights sur les données Wakfu</p>
+  </header>
+
+  @if (loading()) {
+  <div class="loading">Chargement des données...</div>
+  }
+
+  <!-- KPIs -->
+  <div class="kpis-grid">
+    <div class="kpi-card items">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-content">
+        <span class="kpi-value">{{ totalItems() | number }}</span>
+        <span class="kpi-label">Items</span>
+      </div>
+    </div>
+
+    <div class="kpi-card recipes">
+      <div class="kpi-icon">🔨</div>
+      <div class="kpi-content">
+        <span class="kpi-value">{{ totalRecipes() | number }}</span>
+        <span class="kpi-label">Recettes</span>
+      </div>
+    </div>
+
+    <div class="kpi-card resources">
+      <div class="kpi-icon">🌾</div>
+      <div class="kpi-content">
+        <span class="kpi-value">{{ totalResources() | number }}</span>
+        <span class="kpi-label">Ressources</span>
+      </div>
+    </div>
+
+    <div class="kpi-card job-items">
+      <div class="kpi-icon">⚒️</div>
+      <div class="kpi-content">
+        <span class="kpi-value">{{ totalJobItems() | number }}</span>
+        <span class="kpi-label">Items de Métier</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Ressources -->
+  <div class="section">
+    <h2>🏆 Top 10 Ressources les Plus Demandées</h2>
+    <div class="top-list">
+      @for (resource of topResources(); track $index) {
+      <div class="top-item">
+        <span class="rank">{{ $index + 1 }}</span>
+        @if (resource.item.icon_gfx_id) {
+        <img
+          [src]="getItemImageUrl(resource.item.icon_gfx_id)"
+          [alt]="getItemName(resource.item)"
+          class="item-icon"
+        />
+        }
+        <span class="item-name">{{ getItemName(resource.item) }}</span>
+        <span class="usage-badge">{{ resource.usage_count }} utilisations</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Top Crafts -->
+  <div class="section">
+    <h2>⚡ Top 10 Items les Plus Craftés</h2>
+    <div class="top-list">
+      @for (craft of topCrafts(); track $index) {
+      <div class="top-item">
+        <span class="rank">{{ $index + 1 }}</span>
+        @if (craft.item.icon_gfx_id) {
+        <img
+          [src]="getItemImageUrl(craft.item.icon_gfx_id)"
+          [alt]="getItemName(craft.item)"
+          class="item-icon"
+        />
+        }
+        <span class="item-name">{{ getItemName(craft.item) }}</span>
+        <span class="recipe-badge">{{ craft.recipe_count }} recette(s)</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Crafts Complexes -->
+  <div class="section">
+    <h2>🧩 Top 10 Crafts les Plus Complexes</h2>
+    <div class="complex-list">
+      @for (craft of complexCrafts(); track $index) {
+      <div class="complex-item">
+        <span class="rank">{{ $index + 1 }}</span>
+        <div class="craft-info">
+          <span class="craft-name">{{
+            craft.result_name || 'Item #' + craft.recipe.wakfu_id
+          }}</span>
+          <span class="craft-level">Niveau {{ craft.recipe.level }}</span>
+        </div>
+        <span class="ingredient-badge">{{ craft.ingredient_count }} ingrédients</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Répartition par Rareté -->
+  <div class="section">
+    <h2>💎 Répartition par Rareté</h2>
+    <div class="rarity-grid">
+      @for (rarity of rarityDist(); track rarity.rarity) {
+      <div class="rarity-card" [class]="'rarity-' + getRarityClass(rarity.rarity)">
+        <span class="rarity-name">{{ rarity.name }}</span>
+        <span class="rarity-count">{{ rarity.count }}</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Stats par Métier -->
+  <div class="section">
+    <h2>⚒️ Recettes par Métier</h2>
+    <div class="job-grid">
+      @for (job of jobStats(); track job.category.wakfu_id) {
+      <div class="job-card">
+        <h3 class="job-name">{{ job.category.title?.fr || job.category.name || 'Métier' }}</h3>
+        <span class="job-count">{{ job.recipe_count }} recettes</span>
+        <span class="job-type">{{ job.category.category_type }}</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Distribution par Niveau -->
+  @if (levelDist()) {
+  <div class="section">
+    <h2>📈 Distribution par Niveau</h2>
+    <div class="level-grid">
+      <div class="level-chart">
+        <h3>Items</h3>
+        @for (bracket of levelDist()!.items; track bracket.level_range) {
+        <div class="level-bar-container">
+          <span class="level-label">{{ bracket.level_range }}</span>
+          <div class="level-bar">
+            <div class="level-fill" [style.width.%]="(bracket.count / 1000) * 100"></div>
+          </div>
+          <span class="level-count">{{ bracket.count }}</span>
+        </div>
+        }
+      </div>
+
+      <div class="level-chart">
+        <h3>Recettes</h3>
+        @for (bracket of levelDist()!.recipes; track bracket.level_range) {
+        <div class="level-bar-container">
+          <span class="level-label">{{ bracket.level_range }}</span>
+          <div class="level-bar">
+            <div class="level-fill recipes" [style.width.%]="(bracket.count / 800) * 100"></div>
+          </div>
+          <span class="level-count">{{ bracket.count }}</span>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  }
+</div>
