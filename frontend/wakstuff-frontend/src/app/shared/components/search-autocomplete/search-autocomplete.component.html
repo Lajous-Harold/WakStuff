@@ -1,0 +1,66 @@
+<div class="search-autocomplete-container">
+  <div class="search-bar">
+    <div class="search-input-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        #searchInput
+        type="text"
+        class="search-input"
+        [placeholder]="placeholder()"
+        [(ngModel)]="searchQuery"
+        (input)="onInput()"
+        (keydown)="onKeyDown($event)"
+        (focus)="onInput()"
+        autocomplete="off"
+      />
+      @if (isLoading()) {
+      <span class="search-loading">⏳</span>
+      } @if (searchQuery() && !isLoading()) {
+      <button class="search-clear" (click)="clearSearch()" aria-label="Effacer">✕</button>
+      }
+    </div>
+
+    <button class="search-button" (click)="performSearch()">Rechercher</button>
+  </div>
+
+  <!-- Suggestions dropdown -->
+  @if (showSuggestions() && suggestions().length > 0) {
+  <div class="suggestions-dropdown">
+    @for (suggestion of suggestions(); track suggestion.id; let i = $index) {
+    <div
+      class="suggestion-item"
+      [class.selected]="i === selectedIndex()"
+      (click)="selectSuggestion(suggestion)"
+      (mouseenter)="selectedIndex.set(i)"
+    >
+      @if (showIcons() && suggestion.icon_gfx_id) {
+      <img
+        [src]="getIconUrl(suggestion.icon_gfx_id)"
+        [alt]="suggestion.title"
+        class="suggestion-icon"
+      />
+      }
+
+      <div class="suggestion-content">
+        <div class="suggestion-title" [innerHTML]="highlightMatch(suggestion.title)"></div>
+        <div class="suggestion-meta">
+          <span class="suggestion-type" [style.color]="getTypeColor(suggestion.type)">
+            {{ getTypeLabel(suggestion.type) }}
+          </span>
+          @if (suggestion.level) {
+          <span class="suggestion-level">Niv. {{ suggestion.level }}</span>
+          }
+        </div>
+      </div>
+
+      <span class="suggestion-arrow">→</span>
+    </div>
+    }
+  </div>
+  } @if (showSuggestions() && suggestions().length === 0 && !isLoading() && searchQuery().length >=
+  minChars()) {
+  <div class="suggestions-dropdown">
+    <div class="no-results">Aucun résultat trouvé</div>
+  </div>
+  }
+</div>

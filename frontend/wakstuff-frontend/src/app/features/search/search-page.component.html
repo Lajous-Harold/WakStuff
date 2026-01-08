@@ -1,0 +1,124 @@
+<div class="search-page-container">
+  <header class="page-header">
+    <h1>🔍 Recherche Globale</h1>
+    <p class="subtitle">Recherchez parmi tous les items, recettes et ressources</p>
+  </header>
+
+  <div class="search-section">
+    <app-search-autocomplete
+      placeholder="Rechercher items, recettes, ressources..."
+      [showIcons]="true"
+      [maxSuggestions]="5"
+      (search)="onSearch($event)"
+      (suggestionSelected)="onSuggestionSelected($event)"
+    />
+  </div>
+
+  @if (isLoading()) {
+  <app-loading-spinner />
+  } @if (!isLoading() && results() && getTotalResults() > 0) {
+  <div class="results-container">
+    <div class="results-header">
+      <h2>Résultats de recherche</h2>
+      <span class="results-count">{{ getTotalResults() }} résultat(s) trouvé(s)</span>
+    </div>
+
+    <!-- Items -->
+    @if (results()!.items && results()!.items.length > 0) {
+    <section class="results-section">
+      <h3 class="section-title">📦 Items ({{ results()!.items.length }})</h3>
+      <div class="results-grid">
+        @for (item of results()!.items; track item.id) {
+        <div class="result-card" (click)="viewItem(item.wakfu_id, 'item')">
+          <img [src]="getIconUrl(item.icon_gfx_id)" [alt]="item.title" class="result-icon" />
+          <div class="result-content">
+            <h4 class="result-title" [innerHTML]="highlightMatch(item.title)"></h4>
+            <div class="result-meta">
+              @if (item.level) {
+              <span class="meta-badge">Niv. {{ item.level }}</span>
+              } @if (item.type_name) {
+              <span class="meta-type">{{ item.type_name }}</span>
+              }
+            </div>
+            @if (item.description) {
+            <p class="result-description">{{ item.description }}</p>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- Recipes -->
+    @if (results()!.recipes && results()!.recipes.length > 0) {
+    <section class="results-section">
+      <h3 class="section-title">🔨 Recettes ({{ results()!.recipes.length }})</h3>
+      <div class="results-grid">
+        @for (recipe of results()!.recipes; track recipe.id) {
+        <div class="result-card" (click)="viewItem(recipe.wakfu_id, 'recipe')">
+          <img [src]="getIconUrl(recipe.icon_gfx_id)" [alt]="recipe.title" class="result-icon" />
+          <div class="result-content">
+            <h4 class="result-title" [innerHTML]="highlightMatch(recipe.title)"></h4>
+            <div class="result-meta">
+              @if (recipe.level) {
+              <span class="meta-badge">Niv. {{ recipe.level }}</span>
+              } @if (recipe.category_name) {
+              <span class="meta-type">{{ recipe.category_name }}</span>
+              }
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- Resources -->
+    @if (results()!.resources && results()!.resources.length > 0) {
+    <section class="results-section">
+      <h3 class="section-title">🌿 Ressources ({{ results()!.resources.length }})</h3>
+      <div class="results-grid">
+        @for (resource of results()!.resources; track resource.id) {
+        <div class="result-card" (click)="viewItem(resource.wakfu_id, 'resource')">
+          <img
+            [src]="getIconUrl(resource.icon_gfx_id)"
+            [alt]="resource.title"
+            class="result-icon"
+          />
+          <div class="result-content">
+            <h4 class="result-title" [innerHTML]="highlightMatch(resource.title)"></h4>
+            <div class="result-meta">
+              @if (resource.level) {
+              <span class="meta-badge">Niv. {{ resource.level }}</span>
+              } @if (resource.type_name) {
+              <span class="meta-type">{{ resource.type_name }}</span>
+              }
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </section>
+    }
+  </div>
+  } @if (!isLoading() && results() && getTotalResults() === 0) {
+  <div class="no-results">
+    <div class="no-results-icon">🔍</div>
+    <h3>Aucun résultat trouvé</h3>
+    <p>Essayez avec d'autres mots-clés</p>
+  </div>
+  } @if (!results() && !isLoading()) {
+  <div class="empty-state">
+    <div class="empty-icon">💡</div>
+    <h3>Recherchez dans toute la base de données</h3>
+    <p>Tapez au moins 2 caractères pour commencer</p>
+    <ul class="search-tips">
+      <li>✨ Auto-complétion intelligente</li>
+      <li>🎯 Navigation au clavier (↑ ↓ Enter)</li>
+      <li>📦 Items, recettes et ressources</li>
+      <li>🔥 Suggestions en temps réel</li>
+    </ul>
+  </div>
+  }
+</div>
