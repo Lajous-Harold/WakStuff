@@ -92,6 +92,23 @@
     }
   }
 
+  .save-btn {
+    padding: 0.5rem 1.25rem;
+    background: #f59e0b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #d97706;
+      transform: translateY(-2px);
+    }
+  }
+
   .export-btn {
     padding: 0.5rem 1.25rem;
     background: #10b981;

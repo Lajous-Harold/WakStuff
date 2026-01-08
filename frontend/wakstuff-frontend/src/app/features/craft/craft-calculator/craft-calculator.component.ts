@@ -7,11 +7,13 @@ import { CraftTreeNode, CraftTreeResponse } from '../../../core/models';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorMessageComponent } from '../../../shared/components/error-message/error-message.component';
 import { CraftTreeNodeComponent } from '../craft-tree-node/craft-tree-node.component';
+import { CraftFavoritesService } from '../../../core/services/craft-favorites.service';
 import { environment } from '../../../core/config';
 
 interface MaterialSummary {
   item_wakfu_id: number;
   item_title: string;
+  icon_gfx_id?: number;
   total_quantity: number;
   is_resource: boolean;
 }
@@ -64,6 +66,7 @@ export class CraftCalculatorComponent implements OnInit {
           materialsMap.set(node.item_wakfu_id, {
             item_wakfu_id: node.item_wakfu_id,
             item_title: node.item_title,
+            icon_gfx_id: node.icon_gfx_id,
             total_quantity: node.quantity * multiplier,
             is_resource: node.is_resource,
           });
@@ -93,6 +96,7 @@ export class CraftCalculatorComponent implements OnInit {
 
   constructor(
     private recipesService: RecipesService,
+    private craftFavorites: CraftFavoritesService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -171,6 +175,37 @@ export class CraftCalculatorComponent implements OnInit {
     link.download = `materials-${this.wakfuId()}.txt`;
     link.click();
     window.URL.revokeObjectURL(url);
+  }
+
+  saveCraftList(): void {
+    const tree = this.craftTree();
+    if (!tree || !tree.craft_tree) {
+      return;
+    }
+
+    const craftListName = prompt('Nom de la craft list:', tree.craft_tree.item_title);
+    if (!craftListName) {
+      return;
+    }
+
+    const materials = this.materials().map((m) => ({
+      itemId: m.item_wakfu_id,
+      itemName: m.item_title,
+      quantity: m.total_quantity,
+    }));
+
+    this.craftFavorites.addCraftList({
+      name: craftListName,
+      recipeId: tree.craft_tree.item_wakfu_id,
+      recipeName: tree.craft_tree.item_title,
+      recipeIconGfxId: tree.craft_tree.icon_gfx_id,
+      quantity: this.quantity(),
+      maxDepth: this.maxDepth(),
+      skipOwnedItems: this.ownedItems().size > 0,
+      materials,
+    });
+
+    alert('✅ Craft list sauvegardée !');
   }
 
   goBack(): void {

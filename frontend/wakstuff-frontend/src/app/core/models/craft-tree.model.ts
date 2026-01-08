@@ -2,6 +2,7 @@ export interface CraftTreeNode {
   item_id: number;
   item_wakfu_id: number;
   item_title: string;
+  icon_gfx_id?: number;
   quantity: number;
   level: number;
   is_resource: boolean;

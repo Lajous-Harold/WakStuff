@@ -1,7 +1,9 @@
 <div class="tree-node" [class.collapsed]="collapsed()" [class.owned]="isOwned">
   <div class="node-content" (click)="toggleCollapse()">
     <div class="node-icon">
-      <img [src]="getItemIconUrl(node.item_wakfu_id)" [alt]="node.item_title" loading="lazy" />
+      @if (node.icon_gfx_id) {
+      <img [src]="getItemIconUrl(node.icon_gfx_id)" [alt]="node.item_title" loading="lazy" />
+      }
       <span class="node-quantity">×{{ node.quantity }}</span>
     </div>
 

@@ -1,8 +1,9 @@
 <div class="calculator-container">
-  <app-loading-spinner *ngIf="loading()" />
-  <app-error-message *ngIf="error()" [message]="error()!" />
-
-  @if (!loading() && !error() && craftTree()) {
+  @if (loading()) {
+  <app-loading-spinner />
+  } @if (error()) {
+  <app-error-message [message]="error()!" />
+  } @if (!loading() && !error() && craftTree()) {
   <header class="page-header">
     <button class="back-btn" (click)="goBack()">← Retour</button>
 
@@ -46,6 +47,7 @@
         />
       </div>
 
+      <button class="save-btn" (click)="saveCraftList()">⭐ Sauvegarder</button>
       <button class="export-btn" (click)="exportMaterials()">📥 Exporter la liste</button>
     </div>
 
@@ -80,11 +82,13 @@
           (click)="viewItem(material.item_wakfu_id)"
         >
           <div class="material-icon">
+            @if (material.icon_gfx_id) {
             <img
-              [src]="getItemIconUrl(material.item_wakfu_id)"
+              [src]="getItemIconUrl(material.icon_gfx_id)"
               [alt]="material.item_title"
               loading="lazy"
             />
+            }
           </div>
           <div class="material-info">
             <div class="material-name">{{ material.item_title }}</div>

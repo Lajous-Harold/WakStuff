@@ -33,10 +33,11 @@
   </div>
 
   <!-- Contenu -->
-  <app-loading-spinner *ngIf="loading()" />
-  <app-error-message *ngIf="error()" [message]="error()!" />
-
-  @if (!loading() && !error()) { @if (filteredResources().length === 0) {
+  @if (loading()) {
+  <app-loading-spinner />
+  } @if (error()) {
+  <app-error-message [message]="error()!" />
+  } @if (!loading() && !error()) { @if (filteredResources().length === 0) {
   <div class="empty-state">
     <p>Aucune ressource trouvée</p>
   </div>

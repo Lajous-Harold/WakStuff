@@ -7,6 +7,7 @@ export interface Recipe {
   name?: string; // Nom de l'item produit
   title?: string; // Alias de name
   item_wakfu_id?: number; // ID de l'item produit par cette recette
+  icon_gfx_id?: number; // Icon de l'item produit
 }
 
 export interface RecipeIngredient {
@@ -15,6 +16,7 @@ export interface RecipeIngredient {
   item_id: number;
   item_title: string;
   item_wakfu_id: number;
+  icon_gfx_id?: number;
   quantity: number;
 }
 
@@ -24,6 +26,7 @@ export interface RecipeResult {
   produced_item_id: number;
   produced_item_title: string;
   produced_item_wakfu_id: number;
+  icon_gfx_id?: number;
   quantity: number;
 }
 
