@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { RecipesService } from '../../../core/services/recipes.service';
 import { RecipeCategory } from '../../../core/models/recipe.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -9,7 +9,7 @@ import { ErrorMessageComponent } from '../../../shared/components/error-message/
 @Component({
   selector: 'app-craft-jobs',
   standalone: true,
-  imports: [CommonModule, LoadingSpinnerComponent, ErrorMessageComponent],
+  imports: [CommonModule, RouterLink, LoadingSpinnerComponent, ErrorMessageComponent],
   templateUrl: './craft-jobs.component.html',
   styleUrl: './craft-jobs.component.scss',
 })

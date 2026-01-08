@@ -1,13 +1,17 @@
 <div class="craft-jobs-container">
   <header class="page-header">
-    <h1>Métiers de Craft</h1>
-    <p class="subtitle">Choisissez un métier pour voir ses recettes</p>
+    <div class="header-content">
+      <h1>Métiers de Craft</h1>
+      <p class="subtitle">Choisissez un métier pour voir ses recettes</p>
+    </div>
+    <button class="my-crafts-btn" routerLink="/craft/my-crafts">⭐ Mes Crafts</button>
   </header>
 
-  <app-loading-spinner *ngIf="loading()" />
-  <app-error-message *ngIf="error()" [message]="error()!" />
-
-  @if (!loading() && !error()) {
+  @if (loading()) {
+  <app-loading-spinner />
+  } @if (error()) {
+  <app-error-message [message]="error()!" />
+  } @if (!loading() && !error()) {
   <div class="jobs-grid">
     @for (job of craftJobs(); track job.id) {
     <div class="job-card" (click)="navigateToJob(job.id)">
