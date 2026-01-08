@@ -17,6 +17,30 @@
 
     <div class="level-filters">
       <div class="filter-group">
+        <label for="sort-by">Trier par</label>
+        <select
+          id="sort-by"
+          [value]="filters().sort_by || 'level'"
+          (change)="onSortByChange($event)"
+        >
+          <option value="level">Niveau</option>
+          <option value="name">Nom</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="sort-order">Ordre</label>
+        <select
+          id="sort-order"
+          [value]="filters().sort_order || 'desc'"
+          (change)="onSortOrderChange($event)"
+        >
+          <option value="asc">Croissant ↑</option>
+          <option value="desc">Décroissant ↓</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
         <label for="min-level">Niveau min</label>
         <input
           type="number"
@@ -43,15 +67,18 @@
       </div>
 
       @if (minLevel() || maxLevel()) {
-      <button class="clear-filters-btn" (click)="clearLevelFilters()">Effacer</button>
+      <button class="clear-filters-btn" (click)="clearLevelFilters()">Effacer niveau</button>
+      } @if (hasActiveFilters()) {
+      <button class="clear-all-btn" (click)="clearAllFilters()">🗑️ Effacer tout</button>
       }
     </div>
   </div>
 
-  <app-loading-spinner *ngIf="loading()" />
-  <app-error-message *ngIf="error()" [message]="error()!" />
-
-  @if (!loading() && !error()) { @if (recipes().length === 0) {
+  @if (loading()) {
+  <app-loading-spinner />
+  } @if (error()) {
+  <app-error-message [message]="error()!" />
+  } @if (!loading() && !error()) { @if (recipes().length === 0) {
   <div class="empty-state">
     <p>Aucune recette trouvée</p>
   </div>
@@ -59,6 +86,15 @@
   <div class="recipes-grid">
     @for (recipe of recipes(); track recipe.wakfu_id) {
     <div class="recipe-card" (click)="viewRecipeDetail(recipe.wakfu_id)">
+      @if (recipe.icon_gfx_id) {
+      <div class="recipe-icon">
+        <img
+          [src]="getItemIconUrl(recipe.icon_gfx_id)"
+          [alt]="recipe.name || 'Recipe icon'"
+          loading="lazy"
+        />
+      </div>
+      }
       <div class="recipe-header">
         <span class="recipe-level">Niv. {{ recipe.level }}</span>
         @if (recipe.item_wakfu_id) {

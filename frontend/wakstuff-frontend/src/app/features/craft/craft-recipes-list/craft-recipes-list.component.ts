@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RecipesService, RecipeFilters } from '../../../core/services/recipes.service';
 import { RecipeModel, RecipeCategory } from '../../../core/models';
+import { environment } from '../../../core/config';
 import {
   LoadingSpinnerComponent,
   ErrorMessageComponent,
@@ -126,6 +127,30 @@ export class CraftRecipesListComponent implements OnInit {
     this.onLevelFilterChange();
   }
 
+  hasActiveFilters(): boolean {
+    const f = this.filters();
+    return !!(
+      f.search ||
+      this.minLevel() ||
+      this.maxLevel() ||
+      (f.sort_by && f.sort_by !== 'level') ||
+      (f.sort_order && f.sort_order !== 'desc')
+    );
+  }
+
+  clearAllFilters(): void {
+    this.minLevel.set(null);
+    this.maxLevel.set(null);
+    this.filters.update((f) => ({
+      page: 1,
+      per_page: 50,
+      category_id: f.category_id, // Garder la catégorie
+      sort_by: 'level',
+      sort_order: 'desc',
+    }));
+    this.loadRecipes();
+  }
+
   onPageChange(page: number): void {
     this.filters.update((f) => ({ ...f, page }));
     this.loadRecipes();
@@ -148,5 +173,21 @@ export class CraftRecipesListComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/craft']);
+  }
+
+  onSortByChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.filters.update((f) => ({ ...f, sort_by: select.value as any, page: 1 }));
+    this.loadRecipes();
+  }
+
+  onSortOrderChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.filters.update((f) => ({ ...f, sort_order: select.value as any, page: 1 }));
+    this.loadRecipes();
+  }
+
+  getItemIconUrl(iconGfxId: number): string {
+    return `${environment.apiUrl}/proxy/icon/${iconGfxId}`;
   }
 }

@@ -13,6 +13,8 @@ export interface ItemFilters {
   level_max?: number;
   page?: number;
   per_page?: number;
+  sort_by?: 'name' | 'level' | 'rarity' | 'created_at';
+  sort_order?: 'asc' | 'desc';
 }
 
 @Injectable({

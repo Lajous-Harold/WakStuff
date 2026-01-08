@@ -11,6 +11,8 @@ export interface RecipeFilters {
   level_max?: number;
   page?: number;
   per_page?: number;
+  sort_by?: 'name' | 'level';
+  sort_order?: 'asc' | 'desc';
 }
 
 @Injectable({

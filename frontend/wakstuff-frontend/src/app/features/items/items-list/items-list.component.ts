@@ -250,6 +250,18 @@ export class ItemsListComponent implements OnInit {
     this.loadItems();
   }
 
+  onSortByChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.filters.update((f) => ({ ...f, sort_by: select.value as any, page: 1 }));
+    this.loadItems();
+  }
+
+  onSortOrderChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.filters.update((f) => ({ ...f, sort_order: select.value as any, page: 1 }));
+    this.loadItems();
+  }
+
   getItemImageUrl(iconGfxId: number): string {
     // Utiliser le proxy backend pour éviter les problèmes CORS avec le CDN Ankama
     return `${environment.apiUrl}/proxy/icon/${iconGfxId}`;
@@ -289,6 +301,30 @@ export class ItemsListComponent implements OnInit {
 
   getCleanText(text: string | null | undefined): string {
     return cleanWakfuText(text);
+  }
+
+  hasActiveFilters(): boolean {
+    const f = this.filters();
+    return !!(
+      f.search ||
+      f.equipment_type_id ||
+      f.rarity !== undefined ||
+      f.level_min ||
+      f.level_max ||
+      (f.sort_by && f.sort_by !== 'level') ||
+      (f.sort_order && f.sort_order !== 'asc')
+    );
+  }
+
+  clearAllFilters(): void {
+    this.searchValue.set('');
+    this.filters.set({
+      page: 1,
+      per_page: 25,
+      sort_by: 'level',
+      sort_order: 'asc',
+    });
+    this.loadItems();
   }
 
   private syncInputsWithFilters(filters: ItemFilters): void {

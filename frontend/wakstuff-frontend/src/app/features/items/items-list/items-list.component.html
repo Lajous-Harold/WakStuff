@@ -16,6 +16,32 @@
 
     <div class="filters-row">
       <div class="filter-group">
+        <label for="sort-by">Trier par</label>
+        <select
+          id="sort-by"
+          [value]="filters().sort_by || 'level'"
+          (change)="onSortByChange($event)"
+        >
+          <option value="level">Niveau</option>
+          <option value="name">Nom</option>
+          <option value="rarity">Rareté</option>
+          <option value="created_at">Date d'ajout</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="sort-order">Ordre</label>
+        <select
+          id="sort-order"
+          [value]="filters().sort_order || 'asc'"
+          (change)="onSortOrderChange($event)"
+        >
+          <option value="asc">Croissant ↑</option>
+          <option value="desc">Décroissant ↓</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
         <label for="equipment-type">Catégorie d'équipement</label>
         <select
           id="equipment-type"
@@ -72,6 +98,10 @@
           (change)="onLevelMaxChange($event)"
         />
       </div>
+
+      @if (hasActiveFilters()) {
+      <button class="clear-all-btn" (click)="clearAllFilters()">🗑️ Effacer tous les filtres</button>
+      }
     </div>
   </div>
 
