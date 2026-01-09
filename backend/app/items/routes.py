@@ -9,8 +9,10 @@ from ..models import (
     ItemProperty, Action, State, Recipe, RecipeIngredient, RecipeResult,
     RecipeCategory
 )
+import logging
 
 bp = Blueprint('items', __name__)
+logger = logging.getLogger(__name__)
 
 
 @bp.route('', methods=['GET'])
@@ -522,3 +524,134 @@ def get_job_items():
         'per_page': per_page,
         'pages': pagination.pages
     })
+
+
+@bp.route('/compare', methods=['POST'])
+def compare_items():
+    """
+    POST /api/items/compare
+    
+    Compare 2 items en extrayant leurs stats depuis equip_effects.
+    Utilise la même logique que get_item_detail pour le parsing.
+    """
+    data = request.get_json()
+    
+    if not data or 'item_ids' not in data:
+        return jsonify({'error': 'item_ids required'}), 400
+    
+    item_ids = data['item_ids']
+    
+    if not isinstance(item_ids, list) or len(item_ids) != 2:
+        return jsonify({'error': 'item_ids must be an array of exactly 2 items'}), 400
+    
+    # Récupérer les items dans l'ordre demandé
+    items = []
+    for item_id in item_ids:
+        item = Item.query.filter_by(wakfu_id=item_id).first()
+        if not item:
+            return jsonify({'error': f'Item {item_id} not found'}), 404
+        items.append(item)
+    
+    # Préparer les données items avec leurs stats
+    items_data = []
+    all_stats = {}
+    
+    for idx, item in enumerate(items):
+        # Utiliser to_dict() comme dans get_item_detail pour avoir toutes les données
+        item_dict = item.to_dict()
+        
+        # Essayer JobItem pour icon_gfx_id si manquant
+        if not item_dict.get('icon_gfx_id'):
+            job_item = JobItem.query.filter_by(wakfu_id=item.wakfu_id).first()
+            if job_item and job_item.icon_gfx_id:
+                item_dict['icon_gfx_id'] = job_item.icon_gfx_id
+        
+        # Ajouter type d'équipement
+        if item.equipment_type_id:
+            equipment_type = EquipmentItemType.query.filter_by(
+                wakfu_id=item.equipment_type_id
+            ).first()
+            if equipment_type:
+                # Extraire la version française du titre
+                title = equipment_type.title
+                if isinstance(title, dict):
+                    item_dict['equipment_type'] = title.get('fr', title.get('en', str(title)))
+                else:
+                    item_dict['equipment_type'] = title
+        
+        items_data.append(item_dict)
+        
+        # Parser les stats de cet item (même logique que get_item_detail)
+        equip_effects = item_dict.get('equip_effects')
+        if equip_effects:
+            for effect in equip_effects:
+                if isinstance(effect, dict):
+                    # Structure: effect['effect']['definition']
+                    effect_data = effect.get('effect', {})
+                    effect_def = effect_data.get('definition', {})
+                    action_id = effect_def.get('actionId')
+                    params_raw = effect_def.get('params', [])
+                    
+                    # Parser les params (string ou liste)
+                    params = []
+                    if isinstance(params_raw, str):
+                        params = [float(x) for x in params_raw.split() if x]
+                    elif isinstance(params_raw, list):
+                        params = params_raw
+                    
+                    if not action_id or not params:
+                        continue
+                    
+                    # Valeur principale (premier paramètre)
+                    value = params[0] if params else 0
+                    
+                    # Récupérer le nom de la stat
+                    stat_name = f"Action_{action_id}"
+                    action = Action.query.filter_by(wakfu_id=action_id).first()
+                    if action:
+                        desc = action.description
+                        if isinstance(desc, dict) and 'fr' in desc:
+                            stat_name = desc['fr']
+                            # Nettoyer les placeholders [#1], [#2], etc.
+                            import re
+                            # Enlever les métadonnées [#charac XXX]
+                            stat_name = re.sub(r'\[#charac [^\]]+\]\s*', '', stat_name)
+                            # Enlever les conditions Wakfu complexes {[...]}
+                            stat_name = re.sub(r'\{[^\}]*\}', '', stat_name)
+                            # Enlever les placeholders [#1], [#2], etc.
+                            stat_name = re.sub(r'\[#\d+\]', '', stat_name)
+                            # Enlever les accolades et crochets orphelins
+                            stat_name = re.sub(r'[{}\[\]]', '', stat_name)
+                            # Nettoyer les espaces multiples et trim
+                            stat_name = re.sub(r'\s+', ' ', stat_name).strip()
+                        elif isinstance(desc, str) and desc.strip():
+                            stat_name = desc
+                        elif action.effect:
+                            stat_name = action.effect
+                    
+                    # Si le nom est vide après nettoyage, utiliser l'effet comme fallback
+                    if not stat_name or len(stat_name) < 2:
+                        if action and action.effect:
+                            # Utiliser l'effet comme nom de stat
+                            stat_name = action.effect
+                            # Nettoyer le nom de l'effet (enlever les préfixes techniques)
+                            stat_name = re.sub(r'^(Gain|Perte|Boost|Deboost)\s*:\s*', '', stat_name)
+                        else:
+                            # Dernier recours: ignorer cette stat
+                            continue
+                    
+                    # Initialiser si nouveau
+                    if stat_name not in all_stats:
+                        all_stats[stat_name] = {
+                            'action_id': action_id,
+                            'values': [None] * len(items)
+                        }
+                    
+                    # Stocker la valeur pour cet item
+                    all_stats[stat_name]['values'][idx] = value
+        
+    return jsonify({
+        'items': items_data,
+        'stats': all_stats
+    })
+

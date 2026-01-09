@@ -87,6 +87,13 @@ export const routes: Routes = [
       ),
   },
 
+  // Item Compare
+  {
+    path: 'item-compare',
+    loadComponent: () =>
+      import('./features/item-compare/item-compare').then((m) => m.ItemCompareComponent),
+  },
+
   // Crafting
   {
     path: 'craft',

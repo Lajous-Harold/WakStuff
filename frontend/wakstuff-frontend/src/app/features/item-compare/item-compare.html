@@ -1,0 +1,238 @@
+<div class="item-compare-container">
+  <div class="header">
+    <h1>⚖️ Comparateur d'Items</h1>
+    <p class="subtitle">Comparez les statistiques de 2 équipements Wakfu</p>
+  </div>
+
+  <!-- Formulaire de saisie -->
+  <div class="input-section">
+    <div class="input-grid-two">
+      <!-- Item 1 -->
+      <div class="search-group">
+        <label>
+          <span class="label-icon">1️⃣</span>
+          <span class="label-text">Premier Item</span>
+        </label>
+        <div class="search-wrapper">
+          <input
+            type="text"
+            [(ngModel)]="searchQuery1"
+            (input)="onSearchInput1()"
+            (focus)="showDropdown1.set(true)"
+            placeholder="Rechercher un item..."
+            [disabled]="loading()"
+            class="search-field"
+          />
+          @if (selectedItem1()) {
+          <button class="clear-btn" (click)="clearItem1()" type="button">
+            <span>✕</span>
+          </button>
+          } @if (showDropdown1() && searchResults1().length > 0) {
+          <div class="search-dropdown">
+            @for (item of searchResults1(); track item.wakfu_id) {
+            <div class="search-result-item" (click)="selectItem1(item)">
+              <img [src]="getItemIconUrl(item.icon_gfx_id)" [alt]="item.name" class="result-icon" />
+              <div class="result-info">
+                <div class="result-name">{{ item.name }}</div>
+                <div class="result-meta">
+                  <span class="level">Niv. {{ item.level }}</span>
+                  <span class="rarity rarity-{{ item.rarity }}">★{{ item.rarity }}</span>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="search-group">
+        <label>
+          <span class="label-icon">2️⃣</span>
+          <span class="label-text">Deuxième Item</span>
+          @if (selectedItem1()) {
+          <span class="label-hint">(même type que le premier)</span>
+          }
+        </label>
+        <div class="search-wrapper">
+          <input
+            type="text"
+            [(ngModel)]="searchQuery2"
+            (input)="onSearchInput2()"
+            (focus)="showDropdown2.set(true)"
+            [placeholder]="
+              selectedItem1()
+                ? 'Rechercher un item du même type...'
+                : 'Sélectionnez d\'abord un item'
+            "
+            [disabled]="loading() || !selectedItem1()"
+            class="search-field"
+          />
+          @if (selectedItem2()) {
+          <button class="clear-btn" (click)="clearItem2()" type="button">
+            <span>✕</span>
+          </button>
+          } @if (showDropdown2() && searchResults2().length > 0) {
+          <div class="search-dropdown">
+            @for (item of searchResults2(); track item.wakfu_id) {
+            <div class="search-result-item" (click)="selectItem2(item)">
+              <img [src]="getItemIconUrl(item.icon_gfx_id)" [alt]="item.name" class="result-icon" />
+              <div class="result-info">
+                <div class="result-name">{{ item.name }}</div>
+                <div class="result-meta">
+                  <span class="level">Niv. {{ item.level }}</span>
+                  <span class="rarity rarity-{{ item.rarity }}">★{{ item.rarity }}</span>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button class="btn-primary" (click)="compare()" [disabled]="loading()">
+        @if (loading()) {
+        <span class="btn-content">
+          <span class="spinner"></span>
+          <span>Comparaison en cours...</span>
+        </span>
+        } @else {
+        <span class="btn-content">
+          <span>🔍</span>
+          <span>Comparer les Items</span>
+        </span>
+        }
+      </button>
+      <button class="btn-secondary" (click)="reset()" [disabled]="loading()">
+        <span class="btn-content">
+          <span>🗑️</span>
+          <span>Réinitialiser</span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  @if (error()) {
+  <div class="error-message">
+    <span class="error-icon">⚠️</span>
+    <span class="error-text">{{ error() }}</span>
+  </div>
+  }
+
+  <!-- Résultats -->
+  @if (result(); as data) {
+  <div class="results-section">
+    <!-- Cartes des items -->
+    <div class="items-cards">
+      @for (item of data.items; track item.wakfu_id; let idx = $index) {
+      <div class="item-card" [class.item-best]="getBestItemIndex() === idx">
+        @if (getBestItemIndex() === idx) {
+        <div class="best-badge">🏆 Meilleur</div>
+        }
+        <div class="item-icon">
+          @if (item.icon_gfx_id) {
+          <img
+            [src]="getItemIconUrl(item.icon_gfx_id)"
+            [alt]="cleanText(item.title)"
+            loading="lazy"
+          />
+          }
+        </div>
+        <h3 class="item-name">{{ cleanText(item.title) || 'Item ' + item.wakfu_id }}</h3>
+        <div class="item-info">
+          <span class="info-badge level">
+            <span class="badge-icon">⭐</span>
+            <span>Niveau {{ item.level }}</span>
+          </span>
+          <span class="info-badge rarity rarity-{{ getRarityClass(item.rarity) }}">
+            <span class="badge-icon">✨</span>
+            <span>{{ getRarityLabel(item.rarity) }}</span>
+          </span>
+          @if (item.equipment_type) {
+          <span class="info-badge type">
+            <span class="badge-icon">⚔️</span>
+            <span>{{ cleanText(item.equipment_type) }}</span>
+          </span>
+          }
+        </div>
+        <div class="item-score">
+          <span class="score-label">Score global:</span>
+          <span class="score-value">{{ getItemScore(idx) }}</span>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Tableau de comparaison des stats -->
+    @if (getStatNames().length > 0) {
+    <div class="stats-table-container">
+      <div class="table-header">
+        <h2>📊 Comparaison Détaillée des Statistiques</h2>
+        <div class="legend">
+          <span class="legend-item best">
+            <span class="legend-color"></span>
+            <span>Meilleure valeur</span>
+          </span>
+          <span class="legend-item worst">
+            <span class="legend-color"></span>
+            <span>Plus faible valeur</span>
+          </span>
+          <span class="legend-item neutral">
+            <span class="legend-color"></span>
+            <span>Valeur égale ou absente</span>
+          </span>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th class="stat-name-header">Statistique</th>
+              @for (item of data.items; track item.wakfu_id) {
+              <th class="item-header">
+                <div class="item-header-content">
+                  <span class="item-header-name">{{
+                    cleanText(item.title) || 'Item ' + item.wakfu_id
+                  }}</span>
+                  <span class="item-header-level">Niv. {{ item.level }}</span>
+                </div>
+              </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (statName of getStatNames(); track statName) {
+            <tr class="stat-row">
+              <td class="stat-name">
+                <span class="stat-name-text">{{ cleanStatLabel(statName) }}</span>
+              </td>
+              @for (value of data.stats[statName].values; track $index) {
+              <td [class]="'stat-value ' + getStatClass(data.stats[statName].values, $index)">
+                <span class="stat-value-text">{{ formatValue(value) }}</span>
+                @if (getStatClass(data.stats[statName].values, $index) === 'best') {
+                <span class="stat-indicator">▲</span>
+                } @else if (getStatClass(data.stats[statName].values, $index) === 'worst') {
+                <span class="stat-indicator">▼</span>
+                }
+              </td>
+              }
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    } @else {
+    <div class="no-stats">
+      <span class="no-stats-icon">ℹ️</span>
+      <span class="no-stats-text">Aucune statistique disponible pour la comparaison</span>
+    </div>
+    }
+  </div>
+  }
+</div>

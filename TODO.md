@@ -1,12 +1,114 @@
 # TODO - WakStuff
 
-## 📌 État Actuel (9 Janvier 2026 - 00h15)
+## 📌 État Actuel (9 Janvier 2026 - 18h25)
 
-**Dernière mise à jour:** 9 janvier 2026 - 00h15  
+**Dernière mise à jour:** 9 janvier 2026 - 18h25  
 **Branche active:** refonte-wakstuff  
-**Dernier commit:** 7dbef10 - "feat(craft): système de craft complet avec calculateur et arbre récursif"
+**Dernier commit:** Corrections comparaison items (title vs name, stat 1068)
+
+### ✅ PRIORITÉ 2.5 Complétée - Item Comparator (9 Janvier 2026 - 18h25)
+
+**Fonctionnalités Principales:**
+
+- ✅ **Backend Endpoint POST `/api/items/compare`**:
+
+  - Parsing `equip_effects` avec `item.to_dict()` pour éviter les None
+  - Extraction actionId + params pour toutes les stats d'équipement
+  - Lookup Action table pour noms français (description.fr)
+  - Nettoyage avancé des syntaxes Wakfu: `[#charac XXX]`, `{[...]}`, `[#1]`, accolades orphelines
+  - Fallback sur `action.effect` pour stats avec descriptions complexes (ex: action 1068)
+  - Support equipment_type (extraction titre français depuis dict)
+  - Retour structure: `{items: [{wakfu_id, title, level, rarity, icon_gfx_id, equipment_type}], stats: {statName: {action_id, values: [val1, val2]}}}`
+
+- ✅ **Frontend ItemCompareComponent**:
+
+  - Recherche autocomplete avec debounce 300ms sur nom d'item
+  - Limite stricte de 2 items (pas 3)
+  - Filtrage intelligent: item 2 filtré par equipment_type_id de item 1
+  - Dropdown avec preview (icône, nom, niveau, étoiles rareté)
+  - Interface CompareResponse corrigée: `title` au lieu de `name`
+  - Méthodes de nettoyage: cleanText() et cleanStatLabel() pour syntaxe Wakfu
+  - Système de rareté: 8 niveaux avec classes nominales (common, rare, legendary, etc.)
+  - Images via proxy backend: `/api/proxy/icon/<icon_gfx_id>`
+
+- ✅ **Affichage Comparaison**:
+  - Cartes items: Image, titre nettoyé, niveau, badges rareté (gradients), type équipement
+  - Badge "🏆 Meilleur" sur l'item avec le meilleur score global
+  - Tableau stats: Noms de stats nettoyés, valeurs colorées (vert=meilleur, rouge=pire, gris=neutre)
+  - Indicateurs visuels: ▲ pour meilleur, ▼ pour pire
+  - Design responsive avec SCSS moderne
+
+**Bugs Corrigés:**
+
+1. **✅ Stats vides (backend)**:
+
+   - Cause: `item.equip_effects` retournait None avec SQLAlchemy
+   - Solution: Utilisé `item.to_dict().get('equip_effects')` pour données complètes
+
+2. **✅ Images non chargées**:
+
+   - Cause: Angular dev server (4200) ne pouvait pas accéder backend proxy (5000)
+   - Solution: proxy.conf.json + angular.json + redémarrage Angular
+   - Config: `/api/*` → `http://localhost:5000`
+
+3. **✅ AttributeError equipment_type.name**:
+
+   - Cause: Model utilisait `title` pas `name`
+   - Solution: Changé vers `equipment_type.title`
+
+4. **✅ Equipment type retourne dict**:
+
+   - Cause: `equipment_type.title` est JSON avec traductions
+   - Solution: Extraction français: `title.get('fr', title.get('en', str(title)))`
+
+5. **✅ Noms items "Item 23240"**:
+
+   - Cause: Frontend HTML utilisait `item.name` mais backend retournait `item.title`
+   - Solution: Interface TypeScript corrigée + toutes références HTML mises à jour
+
+6. **✅ Stat avec caractères "{" et "}"**:
+   - Cause: Action 1068 "Maîtrise Élémentaire variable" avec syntaxe conditionnelle complexe Wakfu
+   - Investigation: `{[~3]?[#1] Maîtrise [#3]:[#1] Maîtrise sur [#2] élément{[>2]?s:}}`
+   - Solution:
+     - Nettoyage amélioré: enlever tous `{}[]` orphelins après traitement
+     - Fallback sur `action.effect` si description devient vide
+     - Résultat: "Maîtrise Élémentaire dans un nombre variable d'éléments [18.0, 38.0]"
+   - **Aucune perte de données**: Toutes les stats préservées avec noms corrects
+
+**Fichiers Créés/Modifiés:**
+
+- Backend: `app/items/routes.py` (endpoint compare_items avec nettoyage avancé)
+- Frontend TypeScript: `item-compare.service.ts`, `item-compare.ts`
+- Frontend HTML: `item-compare.html`
+- Frontend SCSS: `item-compare.scss`
+- Frontend Utils: `wakfu-text.utils.ts` (cleanWakfuText, cleanWakfuStatDescription)
+- Config: `proxy.conf.json`, `angular.json`
+- Routes: `app.routes.ts` (route /item-compare)
+
+**Tests Validés:**
+
+- ✓ Recherche autocomplete fonctionnelle
+- ✓ Filtrage par type d'équipement
+- ✓ Parsing complet de toutes les stats
+- ✓ Noms de stats nettoyés et lisibles
+- ✓ Stats spéciales (action 1068) avec nom descriptif
+- ✓ Images via proxy backend
+- ✓ Design professionnel avec rareté colorée
+
+### 🚧 En Cours - Aucune tâche active
 
 ### 🎉 Accomplissements Récents (Session du 9 Janvier)
+
+**✅ PRIORITÉ 2.2 - Advanced Filters (9 Janvier 2026 - 00h05):**
+
+- ✅ **Sorting System**:
+  - Backend: `sort_by` et `sort_order` pour items (name, level, rarity, created_at) et recipes (name, level)
+  - Frontend: Select dropdowns dans items-list et craft-recipes-list
+  - Methodes: onSortByChange(), onSortOrderChange()
+- ✅ **Clear All Filters**:
+  - Bouton "🗑️ Effacer tous les filtres" avec garde @if (hasActiveFilters())
+  - Méthodes hasActiveFilters() et clearAllFilters() pour items-list et craft-recipes-list
+  - Reset intelligent (garde catégorie dans craft-recipes-list)
 
 **✅ PRIORITÉ 2.2 - Advanced Filters (9 Janvier 2026 - 00h05):**
 
@@ -279,19 +381,25 @@
 
 ### Backend
 
-- [ ] Endpoint `/api/items/compare` (POST avec liste IDs)
-- [ ] Calcul différences stats entre items
+- [x] Endpoint `/api/items/compare` (POST avec liste IDs) ✅
+- [x] Calcul différences stats entre items ✅
+- [x] Identification meilleurs/pires valeurs ✅
 - [ ] Calcul stats totales si set complet
 - [ ] Recommandations basées sur classe/build
 
 ### Frontend - Interface Comparateur
 
-- [ ] Composant sélection 2-3 items
-- [ ] Page comparaison side-by-side
-- [ ] Highlight différences (positif vert, négatif rouge)
-- [ ] Affichage stats totales
-- [ ] Bouton "Remplacer par" avec suggestions
+- [x] Service ItemCompareService ✅
+- [x] Composant sélection 2-3 items ✅
+- [x] Page comparaison side-by-side ✅
+- [x] Highlight différences (positif vert, négatif rouge) ✅
+- [x] Badge item gagnant ✅
+- [x] Export comparaison .txt ✅
 - [ ] Export comparaison PDF ou image
+- [ ] Bouton "Remplacer par" avec suggestions
+- [ ] Comparaison depuis détail d'item (bouton "Comparer avec...")
+
+**✅ Section 2.5 PARTIELLEMENT COMPLÉTÉE** - Fonctionnalités de base opérationnelles, améliorations optionnelles en attente.
 
 ---
 
